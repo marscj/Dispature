@@ -1,0 +1,5 @@
+@import url('widgets.css');
+
+.vForeignKeyRawIdAdminField {
+    width: 14em;
+}
