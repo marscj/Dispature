@@ -25,6 +25,11 @@ urlpatterns = urlpatterns + [
     url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
 ]
 
+# OAUTH2
+urlpatterns = urlpatterns + [
+    url(r'^oauth2/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+]
+
 # static files
 urlpatterns = urlpatterns + \
     static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
