@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls import url, include
 from django.conf.urls.static import static
 from account import views as accounts_views
+
 # home
 urlpatterns = [
     url('', include('home.urls'))

@@ -221,6 +221,12 @@ JET_THEMES = [
 
 JET_SIDE_MENU_ITEMS = {
     'xadmin': [
+        {'label': _('Autho ToolKit'), 'items': [
+            {'name': 'oauth2_provider.application'},
+            {'name': 'oauth2_provider.grant'},
+            {'name': 'oauth2_provider.accesstoken'},
+            {'name': 'oauth2_provider.refreshtoken'},
+        ]},
         {'label': _('Resources'), 'items': [
             {'name': 'auth.user'},
             {'name': 'main.staff'},

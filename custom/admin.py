@@ -513,8 +513,9 @@ class SettingAdmin(DjangoObjectActions, PermissionAdmin):
         return 'verifycode'
 
     def change_code(self, request, obj):
+        from django.utils.crypto import get_random_string
         if request.user.is_superuser or request.user.staff.is_admin:
-            obj.verifycode = Tools.get_code()
+            obj.verifycode = get_random_string(length=4)
             obj.save()
 
     change_code.label = "Change"
