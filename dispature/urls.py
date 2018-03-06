@@ -19,6 +19,11 @@ urlpatterns = urlpatterns + [
     url('', include('custom.urls'))
 ]
 
+# main
+urlpatterns = urlpatterns + [
+    url('', include('main.urls'))
+]
+
 # jet
 urlpatterns = urlpatterns + [
     url(r'^jet/', include('jet.urls', 'jet')),
@@ -29,6 +34,13 @@ urlpatterns = urlpatterns + [
 urlpatterns = urlpatterns + [
     url(r'^oauth2/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
+
+# rest_framework
+if settings.DEBUG:
+    urlpatterns = urlpatterns + [
+        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    ]
+
 
 # static files
 urlpatterns = urlpatterns + \
