@@ -5,4 +5,5 @@ from .views import StaffViewSet
 
 router = DefaultRouter()
 router.register(r'staffs', StaffViewSet, base_name='staff')
+router.register(r'tasks', StaffViewSet, base_name='task')
 urlpatterns = router.urls
