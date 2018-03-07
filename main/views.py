@@ -24,9 +24,11 @@ class MixinPermissions(views.APIView):
 
 
 class StaffViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
+
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
     serializer_detail_class = StaffDetailSerializer
+    filter_fields = '__all__'
 
     def get_permissions(self):
         if self.action == 'list':
@@ -37,25 +39,48 @@ class StaffViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
 
 
 class VehicleViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissions):
+
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
     serializer_detail_class = VehicleDetailSerializer
+    filter_fields = '__all__'
 
 
 class TaskViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissions):
+
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     serializer_detail_class = TaskDetailSerializer
+    filter_fields = '__all__'
 
 
 class GroupViewSet(viewsets.ModelViewSet, MixinPermissions):
+
     queryset = BaseGroup.objects.all()
     serializer_class = GroupSerializer
+    filter_fields = '__all__'
 
-    def list(self, request):
-        queryset = BaseGroup.objects.all()
-        serializer = GroupSerializer(queryset, many=True)
-        return Response(serializer.data)
+
+class DLIViewSet(viewsets.ModelViewSet, MixinPermissions):
+
+    queryset = DLI.objects.all()
+    serializer_class = DLISerializer
+    filter_fields = '__all__'
+
+
+class TLIViewSet(viewsets.ModelViewSet, MixinPermissions):
+
+    queryset = TLI.objects.all()
+    serializer_class = TLISerializer
+    filter_fields = '__all__'
+
+
+class PPIViewSet(viewsets.ModelViewSet, MixinPermissions):
+
+    queryset = PPI.objects.all()
+    serializer_class = PPISerializer
+    filter_fields = '__all__'
+
 
 # class StaffViewSet(viewsets.ViewSet, MixinPermissions):
 #
