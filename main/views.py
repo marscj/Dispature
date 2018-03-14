@@ -8,12 +8,14 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_extensions.mixins import DetailSerializerMixin
 from rest_framework.filters import OrderingFilter
+from rest_framework.decorators import list_route
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .permissions import (IsStaffSelf, IsStaffAdmin, IsAuthenticated)
+from .permissions import (IsStaffSelf, IsStaffAdmin, IsAuthenticated, AllowAny)
 from .serializers import (
     DLISerializer, StaffSerializer, StaffDetailSerializer, VehicleSerializer, VehicleDetailSerializer, TaskSerializer, TaskDetailSerializer, GroupSerializer, TLISerializer, DLISerializer, PPISerializer)
 from .models import Staff, Vehicle, Task, BaseGroup, TLI, DLI, PPI
+from .forms import StaffCreationForm
 
 
 class MixinPermissions(views.APIView):
@@ -43,6 +45,14 @@ class StaffViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
         else:
             permission_classes = [IsStaffSelf]
         return [permission() for permission in permission_classes]
+
+    @list_route(methods=['post'], permission_classes=[AllowAny], url_name='create-staff')
+    def create_staff(self, request):
+        form = StaffCreationForm(request.POST)
+        if form.is_valid():
+            staff = form.save()
+            context = {staff: staff, result: 'OK'}
+            return Response(context)
 
 
 class VehicleViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissions):
