@@ -46,12 +46,15 @@ class StaffViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
             permission_classes = [IsStaffSelf]
         return [permission() for permission in permission_classes]
 
-    @list_route(methods=['post'], permission_classes=[AllowAny], url_name='create-staff')
-    def create_staff(self, request):
+    @list_route(methods=['post'], permission_classes=[AllowAny], url_name='create')
+    def signup(self, request):
         form = StaffCreationForm(request.POST)
         if form.is_valid():
             staff = form.save()
-            context = {staff: staff, result: 'OK'}
+            context = {'staff': staff, 'result': 'OK'}
+            return Response(context)
+        else:
+            context = {'error': 'error'}
             return Response(context)
 
 
