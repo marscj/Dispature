@@ -7,10 +7,13 @@ from rest_framework import viewsets, generics, views
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_extensions.mixins import DetailSerializerMixin
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
-from .permissions import *
-from .serializers import *
-from .models import *
+from .permissions import (IsStaffSelf, IsStaffAdmin, IsAuthenticated)
+from .serializers import (
+    DLISerializer, StaffSerializer, StaffDetailSerializer, VehicleSerializer, VehicleDetailSerializer, TaskSerializer, TaskDetailSerializer, GroupSerializer, TLISerializer, DLISerializer, PPISerializer)
+from .models import Staff, Vehicle, Task, BaseGroup, TLI, DLI, PPI
 
 
 class MixinPermissions(views.APIView):
@@ -28,7 +31,11 @@ class StaffViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
     serializer_detail_class = StaffDetailSerializer
-    filter_fields = '__all__'
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filter_fields = ['id', 'full_name', 'phone', 'status',
+                     'is_driver', 'is_tourguide', 'is_operator']
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
     def get_permissions(self):
         if self.action == 'list':
@@ -43,7 +50,11 @@ class VehicleViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissi
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
     serializer_detail_class = VehicleDetailSerializer
-    filter_fields = '__all__'
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filter_fields = ['id', 'traffic_plate_no', 'model_name', 'model_year',
+                     'num_of_pass', 'exp_date', 'policy_no', 'rate', 'status']
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
 
 class TaskViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissions):
@@ -51,35 +62,51 @@ class TaskViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissions
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     serializer_detail_class = TaskDetailSerializer
-    filter_fields = '__all__'
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filter_fields = ['id', 'create_time', 'start_time_in', 'end_time_in',
+                     'vehicle', 'driver', 'tourguide', 'start_addr', 'end_addr', ]
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
 
 class GroupViewSet(viewsets.ModelViewSet, MixinPermissions):
 
     queryset = BaseGroup.objects.all()
     serializer_class = GroupSerializer
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
 
 class DLIViewSet(viewsets.ModelViewSet, MixinPermissions):
 
     queryset = DLI.objects.all()
     serializer_class = DLISerializer
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
 
 class TLIViewSet(viewsets.ModelViewSet, MixinPermissions):
 
     queryset = TLI.objects.all()
     serializer_class = TLISerializer
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
 
 class PPIViewSet(viewsets.ModelViewSet, MixinPermissions):
 
     queryset = PPI.objects.all()
     serializer_class = PPISerializer
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
 
 # class StaffViewSet(viewsets.ViewSet, MixinPermissions):

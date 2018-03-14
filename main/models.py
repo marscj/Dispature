@@ -14,9 +14,9 @@ import time
 import uuid
 import datetime
 
-from custom.utils import *
-from .validators import *
-from .constants import *
+from custom.utils import Tools
+from .validators import verifycode_validate
+from .constants import GROUP, STATUS, GENDER, LANGUAGE
 
 
 class Image(models.Model):

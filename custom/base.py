@@ -13,10 +13,11 @@ from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.core import serializers
 
-from main.models import *
 import json
 
 from .forms import TaskForm
+from main.models import *
+from main.forms import StaffCreationForm
 
 
 class BaseAdminSite(AdminSite):
