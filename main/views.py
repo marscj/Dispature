@@ -21,7 +21,7 @@ from .models import Staff, Vehicle, Task, BaseGroup, TLI, DLI, PPI
 from .forms import StaffCreationForm
 
 
-class MixinPermissions(views.APIView):
+class BaseModelViewSet(viewsets.ModelViewSet, views.APIView):
 
     def get_permissions(self):
         if self.action == 'list':
@@ -50,7 +50,7 @@ class StaffViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
-class VehicleViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissions):
+class VehicleViewSet(DetailSerializerMixin, BaseModelViewSet):
 
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
@@ -62,7 +62,7 @@ class VehicleViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissi
     ordering_fields = '__all__'
 
 
-class TaskViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissions):
+class TaskViewSet(DetailSerializerMixin, BaseModelViewSet):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -74,7 +74,7 @@ class TaskViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissions
     ordering_fields = '__all__'
 
 
-class GroupViewSet(viewsets.ModelViewSet, MixinPermissions):
+class GroupViewSet(BaseModelViewSet):
 
     queryset = BaseGroup.objects.all()
     serializer_class = GroupSerializer
@@ -84,7 +84,7 @@ class GroupViewSet(viewsets.ModelViewSet, MixinPermissions):
     ordering_fields = '__all__'
 
 
-class DLIViewSet(viewsets.ModelViewSet, MixinPermissions):
+class DLIViewSet(BaseModelViewSet):
 
     queryset = DLI.objects.all()
     serializer_class = DLISerializer
@@ -94,7 +94,7 @@ class DLIViewSet(viewsets.ModelViewSet, MixinPermissions):
     ordering_fields = '__all__'
 
 
-class TLIViewSet(viewsets.ModelViewSet, MixinPermissions):
+class TLIViewSet(BaseModelViewSet):
 
     queryset = TLI.objects.all()
     serializer_class = TLISerializer
@@ -104,7 +104,7 @@ class TLIViewSet(viewsets.ModelViewSet, MixinPermissions):
     ordering_fields = '__all__'
 
 
-class PPIViewSet(viewsets.ModelViewSet, MixinPermissions):
+class PPIViewSet(BaseModelViewSet):
 
     queryset = PPI.objects.all()
     serializer_class = PPISerializer
