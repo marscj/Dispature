@@ -1,6 +1,5 @@
 from rest_framework import serializers
-
-from .models import *
+from .models import Staff, Vehicle, Task, BaseGroup, TLI, DLI, PPI
 
 
 class DLISerializer(serializers.ModelSerializer):
@@ -32,7 +31,8 @@ class StaffSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Staff
-        fields = ['id', 'full_name', 'phone', 'photo', 'status', 'is_driver', 'is_tourguide', 'is_operator']
+        fields = ['id', 'full_name', 'phone', 'photo', 'status',
+                  'is_driver', 'is_tourguide', 'is_operator']
 
 
 class StaffDetailSerializer(serializers.ModelSerializer):

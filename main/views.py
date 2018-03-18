@@ -8,12 +8,15 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_extensions.mixins import DetailSerializerMixin
 from rest_framework.filters import OrderingFilter
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, api_view
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (IsStaffSelf, IsStaffAdmin, IsAuthenticated, AllowAny)
 from .serializers import (
-    DLISerializer, StaffSerializer, StaffDetailSerializer, VehicleSerializer, VehicleDetailSerializer, TaskSerializer, TaskDetailSerializer, GroupSerializer, TLISerializer, DLISerializer, PPISerializer)
+    DLISerializer, StaffSerializer, StaffDetailSerializer,
+    VehicleSerializer, VehicleDetailSerializer, TaskSerializer,
+    TaskDetailSerializer, GroupSerializer, TLISerializer,
+    DLISerializer, PPISerializer)
 from .models import Staff, Vehicle, Task, BaseGroup, TLI, DLI, PPI
 from .forms import StaffCreationForm
 
@@ -45,17 +48,6 @@ class StaffViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
         else:
             permission_classes = [IsStaffSelf]
         return [permission() for permission in permission_classes]
-
-    @list_route(methods=['post'], permission_classes=[AllowAny], url_name='create')
-    def signup(self, request):
-        form = StaffCreationForm(request.POST)
-        if form.is_valid():
-            staff = form.save()
-            context = {'staff': staff, 'result': 'OK'}
-            return Response(context)
-        else:
-            context = {'error': 'error'}
-            return Response(context)
 
 
 class VehicleViewSet(DetailSerializerMixin, viewsets.ModelViewSet, MixinPermissions):
@@ -120,6 +112,19 @@ class PPIViewSet(viewsets.ModelViewSet, MixinPermissions):
     filter_fields = '__all__'
     search_fields = '__all__'
     ordering_fields = '__all__'
+
+
+class StaffSigup(views.APIView):
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        staff = StaffCreationForm(request.data)
+        if staff.is_valid():
+            staff.save()
+            return Response('ok')
+
+        return Response(staff.errors, status=400)
 
 
 # class StaffViewSet(viewsets.ViewSet, MixinPermissions):
