@@ -67,12 +67,5 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['id', 'create_time', 'start_time_in', 'end_time_in',
-                  'vehicle', 'driver', 'tourguide', 'start_addr', 'end_addr', ]
-
-
-class TaskDetailSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Task
-        fields = '__all__'
+        fields = ['id', 'uuid', 'create_time', 'start_time', 'end_time','remake',
+                  'vehicle', 'driver', 'tourguide', 'start_addr', 'end_addr']

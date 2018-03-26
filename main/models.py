@@ -260,7 +260,7 @@ class Task(models.Model):
                 raise ValidationError(
                     '%s is busy' % qs[0].driver.full_name)
 
-        if self.driver.is_tourguide:
+        if self.driver and self.driver.is_tourguide:
             qs = Task.objects.exclude(id=self.id).filter(tourguide=self.driver).filter(
                 Q(start_time__lte=self.start_time, end_time__gte=self.start_time)
                 | Q(start_time__lte=self.end_time, end_time__gte=self.end_time)
@@ -279,7 +279,7 @@ class Task(models.Model):
                 raise ValidationError(
                     '%s is busy' % qs[0].tourguide.full_name)
 
-        if self.tourguide.is_driver:
+        if self.tourguide and self.tourguide.is_driver:
             qs = Task.objects.exclude(id=self.id).filter(driver=self.tourguide).filter(
                 Q(start_time__lte=self.start_time, end_time__gte=self.start_time)
                 | Q(start_time__lte=self.end_time, end_time__gte=self.end_time)

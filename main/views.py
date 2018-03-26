@@ -8,14 +8,14 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_extensions.mixins import DetailSerializerMixin
 from rest_framework.filters import OrderingFilter
-from rest_framework.decorators import list_route, api_view
+from rest_framework.decorators import list_route, api_view, detail_route
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .permissions import (IsStaffSelf, IsStaffAdmin, IsAuthenticated, AllowAny)
+from .permissions import (IsStaffSelf, IsStaffAdmin, IsAuthenticated, AllowAny, IsAdminOrIsSelf)
 from .serializers import (
     DLISerializer, StaffSerializer, StaffDetailSerializer,
     VehicleSerializer, VehicleDetailSerializer, TaskSerializer,
-    TaskDetailSerializer, GroupSerializer, TLISerializer,
+    GroupSerializer, TLISerializer,
     DLISerializer, PPISerializer)
 from .models import Staff, Vehicle, Task, BaseGroup, TLI, DLI, PPI
 from .forms import StaffCreationForm
@@ -49,6 +49,11 @@ class StaffViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
             permission_classes = [IsStaffSelf]
         return [permission() for permission in permission_classes]
 
+    @detail_route(methods=['post'], permission_classes=[IsAdminOrIsSelf])
+    def upload_photo(self,request, pk=None):
+        staff = request.user.staff
+        return Response('ok')
+
 
 class VehicleViewSet(DetailSerializerMixin, BaseModelViewSet):
 
@@ -61,15 +66,12 @@ class VehicleViewSet(DetailSerializerMixin, BaseModelViewSet):
     search_fields = '__all__'
     ordering_fields = '__all__'
 
-
-class TaskViewSet(DetailSerializerMixin, BaseModelViewSet):
+class TaskViewSet(BaseModelViewSet):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    serializer_detail_class = TaskDetailSerializer
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = ['id', 'create_time', 'start_time_in', 'end_time_in',
-                     'vehicle', 'driver', 'tourguide', 'start_addr', 'end_addr', ]
+    filter_fields = ['id', 'create_time', 'vehicle', 'driver', 'tourguide', 'start_addr', 'end_addr', ]
     search_fields = '__all__'
     ordering_fields = '__all__'
 

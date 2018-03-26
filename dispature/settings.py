@@ -87,8 +87,8 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5,
-    'DATETIME_FORMAT': ("%Y-%m-%d %H:%M:%S"),
+    'PAGE_SIZE': 20,
+    'DATETIME_FORMAT': ("%Y-%m-%d %H:%M"),
 }
 
 ROOT_URLCONF = 'dispature.urls'
@@ -155,6 +155,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = False
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1024*1024*2
 
 
 # Static files (CSS, JavaScript, Images)
