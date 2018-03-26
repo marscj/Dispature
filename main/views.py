@@ -20,6 +20,10 @@ from .serializers import (
 from .models import Staff, Vehicle, Task, BaseGroup, TLI, DLI, PPI
 from .forms import StaffCreationForm
 
+from rest_framework.renderers import JSONRenderer
+
+class Utf8JSONRenderer(JSONRenderer):
+    charset = 'utf-8'
 
 class BaseModelViewSet(viewsets.ModelViewSet, views.APIView):
 
@@ -74,6 +78,7 @@ class TaskViewSet(BaseModelViewSet):
     filter_fields = ['id', 'create_time', 'vehicle', 'driver', 'tourguide', 'start_addr', 'end_addr', ]
     search_fields = '__all__'
     ordering_fields = '__all__'
+    renderer_classes = [Utf8JSONRenderer,]
 
 
 class GroupViewSet(BaseModelViewSet):
