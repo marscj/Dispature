@@ -104,3 +104,4 @@ media/
 .idea/
 .vscode/
 .DS_Store
+main/migrations
