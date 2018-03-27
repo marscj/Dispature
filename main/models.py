@@ -141,7 +141,7 @@ class Staff(User):
     #     super(Staff, self).save(**kwargs)
 
     def save(self):
-        super().save()
+        super().save() 
 
 
 class Vehicle(models.Model):
@@ -298,29 +298,3 @@ class Task(models.Model):
             self.clean_vehicle()
             self.clean_driver()
             self.clean_tourguide()
-
-
-class Setting(models.Model):
-    verifycode = models.CharField(
-        max_length=4, unique=True, default=Tools.get_code, help_text='for the staff registration ')
-
-    class Meta:
-        verbose_name = 'Setting'
-        verbose_name_plural = 'Setting'
-
-    def __str__(self):
-        return self.verifycode
-
-
-class BaseGroup(models.Model):
-    name = models.CharField(max_length=64, unique=True)
-    type_name = models.CharField(
-        max_length=16, choices=GROUP, verbose_name='Type')
-
-    class Meta:
-        verbose_name = 'Group'
-        verbose_name_plural = 'Group'
-        ordering = ['type_name', 'name']
-
-    def __str__(self):
-        return self.name
