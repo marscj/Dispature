@@ -1,18 +1,18 @@
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
+from django.urls import path
 
-from .views import (StaffViewSet, TaskViewSet, VehicleViewSet,
-                    GroupViewSet, DLIViewSet, TLIViewSet, PPIViewSet,StaffSigup)
+from .views import (StaffViewSet, VehicleViewSet, StaffSigup)
+
+from .admin import site
+from .xadmin import xsite
 
 router = DefaultRouter()
 router.register(r'staffs', StaffViewSet, base_name='staff')
 router.register(r'vehicles', VehicleViewSet, base_name='vehicle')
-router.register(r'tasks', TaskViewSet, base_name='task')
-router.register(r'groups', GroupViewSet, base_name='group')
-router.register(r'dlis', DLIViewSet, base_name='DLI')
-router.register(r'tlis', TLIViewSet, base_name='TLI')
-router.register(r'ppis', PPIViewSet, base_name='PPI')
 
 urlpatterns = [
     url(r'staffs/regist/', StaffSigup.as_view()),
+    path('admin/', site.urls),
+    path('xadmin/', xsite.urls),
 ] + router.urls

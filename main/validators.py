@@ -3,9 +3,9 @@ from django.utils.translation import gettext_lazy as _
 
 
 def verifycode_validate(code):
-    from main.models import Setting
+    from main.models import Company
 
-    qs = Setting.objects.all()[0]
+    qs = Company.objects.all()
 
     if not qs or qs.verifycode != code:
         raise ValidationError(

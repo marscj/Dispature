@@ -2,21 +2,10 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls import url, include
 from django.conf.urls.static import static
-from account import views as accounts_views
 
 # home
 urlpatterns = [
     url('', include('home.urls'))
-]
-
-# account
-urlpatterns = urlpatterns + [
-    url('', include('account.urls'))
-]
-
-# custom
-urlpatterns = urlpatterns + [
-    url('', include('custom.urls'))
 ]
 
 # main

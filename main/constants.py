@@ -1,55 +1,62 @@
-GROUP = [
-    ('vehicle', 'Vehicle'),
-    ('staff', 'Staff'),
-]
-
-RENTAL_MODE = [
-    (0, 'Rent_Per_Day'),
-    (1, 'Rent_Per_Week'),
-    (2, 'Rent_Half_Month'),
-    (3, 'Rent_Full_Month'),
-]
 
 STATUS = [
     ('enabled', 'Enabled'),
     ('disabled', 'Disabled'),
 ]
 
-DEPOSIT_DETAILS = [
-    (0, 'None'),
-    (1, 'Cash'),
-]
-
 GENDER = [
-    (1, 'Male'),
-    (1, 'Female'),
+    ('male', 'Male'),
+    ('female', 'Female'),
 ]
 
 LANGUAGE = [
-    (0, 'English'),
-    (1, 'Chinese'),
+    ('english', 'English'),
+    ('chinese', 'Chinese'),
 ]
 
-JOB_STATUS = [
-    (0, 'Open'),
-    (1, 'Staff Cancel'),
-    (2, 'Customer Cancel'),
-    (3, 'Close'),
-    (4, 'Complete')
+MODEL = [
+    ('car','Car'),
+    ('suv','SUV'),
+    ('mpv','MPV'),
+    ('van','VAN'),
+    ('bus','BUS'),
+    ('luxury', 'Luxury')
 ]
 
-AIRPORTS = [
-    ('DXB', '(DXB) Dubai International Airport'),
-    ('DWC', '(DWC) AL Maktoum International Airport'),
-    ('AUH', '(AUH) Abu Dhabi International Airport'),
-    ('SHJ', '(SHJ) Sharjah International Airport'),
-    ('RKT', '(RKT) Ras Al Khaimah International Airport'),
+ORDER_STATUS = [
+    ('open', 'Open'),
+    ('cancel', 'Cancel'),
+    ('complete', 'Complete'),
 ]
 
-TERMINAL = [
-    ('Terminal 1', 'Terminal 1'),
-    ('Terminal 2', 'Terminal 2'),
-    ('Terminal 3', 'Terminal 3'),
-    ('Terminal 4', 'Terminal 4'),
-    ('Terminal 5', 'Terminal 5'),
+SETTLE_STATUS = [
+    ('unsettle', 'Unsettle'),
+    ('settle', 'Settle'),
+]
+
+PAY_STATUS = [
+    ('paid', 'Paid'),
+    ('refunding', 'Refunding'),
+    ('refunded', 'Refunded'),
+]
+
+WORK_STATUS = [
+    ('start', 'Start'),
+    ('stop', 'Stop'),
+]
+
+PICK_TYPE = [
+    ('self', 'Pick up car by yourself'),
+    ('shop', 'Go to the shop'),
+]
+
+CLIENT_TYPE = [
+    ('company', 'Company'),
+    ('personal', 'Personal'),
+]
+
+STAFF_CONFIRM = [
+    ('wait', 'Waiting for confirmation'),
+    ('agree', 'Agree'),
+    ('refuse', 'Refuse'),
 ]

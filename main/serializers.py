@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Staff, Vehicle, Task, BaseGroup, TLI, DLI, PPI
+from .models import Staff, Vehicle, TLI, DLI, PPI
 
 
 class DLISerializer(serializers.ModelSerializer):
@@ -20,13 +20,6 @@ class PPISerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class GroupSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = BaseGroup
-        fields = '__all__'
-
-
 class StaffSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -34,38 +27,9 @@ class StaffSerializer(serializers.ModelSerializer):
         fields = ['id', 'full_name', 'phone', 'photo', 'status',
                   'is_driver', 'is_tourguide', 'is_operator']
 
-
-class StaffDetailSerializer(serializers.ModelSerializer):
-    group = GroupSerializer(many=True, read_only=True)
-    DLI = PPISerializer(many=False, read_only=False)
-    TLI = PPISerializer(many=False, read_only=False)
-    PPI = PPISerializer(many=False, read_only=False)
-
-    class Meta:
-        model = Staff
-        exclude = ['password', 'first_name', 'last_name',
-                   'email', 'create_time', 'user_permissions']
-
-
 class VehicleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vehicle
         fields = ['id', 'traffic_plate_no', 'model_name', 'model_year',
                   'num_of_pass', 'exp_date', 'policy_no', 'rate', 'status']
-
-
-class VehicleDetailSerializer(serializers.ModelSerializer):
-    group = GroupSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Vehicle
-        fields = '__all__'
-
-
-class TaskSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Task
-        fields = ['id', 'uuid', 'create_time', 'start_time', 'end_time','remake',
-                  'vehicle', 'driver', 'tourguide', 'start_addr', 'end_addr']

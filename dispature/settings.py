@@ -44,13 +44,10 @@ INSTALLED_APPS = [
     'rest_framework_extensions',
     'oauth2_provider',
     'django_filters',
-    'widget_tweaks',
     'django_object_actions',
 
     'home',
-    'account',
     'main',
-    'custom'
 ]
 
 MIDDLEWARE = [
@@ -171,15 +168,15 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 1024*1024*2
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGOUT_REDIRECT_URL = None
 LOGIN_REDIRECT_URL = 'home'
-LOGIN_URL = '/accounts/login/'
+# LOGIN_URL = '/accounts/login/'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # jet settings
@@ -232,29 +229,26 @@ JET_SIDE_MENU_ITEMS = {
         ]},
         {'label': _('Resources'), 'items': [
             {'name': 'auth.user'},
+            {'name': 'main.company'},
             {'name': 'main.staff'},
             {'name': 'main.vehicle'},
-            {'name': 'main.basegroup'},
         ]},
-        {'label': _('Tasks'), 'items': [
-            {'name': 'main.task'},
-        ]},
-        {'label': _('Setting'), 'items': [
-            {'name': 'main.setting'},
+        {'label': _('Orders'), 'items': [
+            {'name': 'main.orderstaff'},
+            {'name': 'main.ordervehicle'},
         ]},
     ],
 
     'admin': [
         {'label': _('Resources'), 'items': [
+            {'name': 'main.company'},
             {'name': 'main.staff'},
             {'name': 'main.vehicle'},
-            {'name': 'main.basegroup'},
+            {'name': 'main.vehiclemodel'},
         ]},
-        {'label': _('Tasks'), 'items': [
-            {'name': 'main.task'},
-        ]},
-        {'label': _('Setting'), 'items': [
-            {'name': 'main.setting'},
+        {'label': _('Orders'), 'items': [
+            {'name': 'main.orderstaff'},
+            {'name': 'main.ordervehicle'},
         ]},
     ],
 }
