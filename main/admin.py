@@ -164,7 +164,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                     'password2',
                     'name',
                     'phone',
-                    'code'
+                    'verifycode'
                 ]
             }
         ],

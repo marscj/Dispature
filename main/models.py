@@ -15,7 +15,6 @@ import uuid
 import datetime
 
 from .utils import Tools
-from .validators import verifycode_validate
 import main.constants as Constants
 
 
@@ -87,6 +86,8 @@ class PPI(models.Model):
     def __str__(self):
         return self.first_name + ' ' + self.last_name
 
+class CompanyManager(models.Manager):
+    pass
 
 class Company(models.Model):
     name = models.CharField(max_length=128)
@@ -96,6 +97,8 @@ class Company(models.Model):
     addr = models.CharField(max_length=256)
     verifycode = models.CharField(
         max_length=4, unique=True, default=Tools.get_code, help_text='For Staff Regist')
+    
+    objects = CompanyManager
 
     class Meta:
         verbose_name = 'Company'
@@ -112,15 +115,15 @@ class Staff(User):
     nickname = models.CharField(max_length=64, help_text='nick name')  # 昵称
     introduction = models.TextField(max_length=256, blank=True)  # 自我介绍
     photo = models.ImageField(upload_to='photos', null=True, blank=True)  # 头像
-    status = models.CharField(
-        max_length=16, default='enabled', blank=True, null=True, choices=Constants.STATUS)  # 状态
+    status = models.CharField(max_length=16, default='disabled', blank=True, null=True, choices=Constants.STATUS)  # 状态
     hour_pay = models.FloatField(blank=True, default=0.0)  # 时薪
     work_status = models.CharField(max_length=5, default='start', choices=Constants.WORK_STATUS)
     driver = models.BooleanField(
         default=False, verbose_name='Driver ?')  # 是否 司机
     tourguide = models.BooleanField(
         default=False, verbose_name='TourGuide ?')  # 是否 导游
-    company = models.OneToOneField(
+    update_time = models.DateTimeField(default=timezone.now, editable=False)
+    company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name='staff')
 
     class Meta:
@@ -129,9 +132,6 @@ class Staff(User):
 
     def __str__(self):
         return self.name
-
-    def save(self):
-        super().save()
 
 class VehicleModel(models.Model):
     model = models.CharField(default='Car', max_length=6, choices=Constants.MODEL)  # 类型
@@ -159,11 +159,9 @@ class Vehicle(models.Model):
     reg_date = models.DateField()                                       # 注册日期
     ins_exp = models.DateField()                                        # 日期
     policy_no = models.CharField(max_length=32, unique=True)            # 保险号
-    status = models.CharField(
-        max_length=16, default='enabled', blank=True, null=True, choices=Constants.STATUS)
+    status = models.CharField(max_length=16, default='disabled', blank=True, null=True, choices=Constants.STATUS)
     model = models.ForeignKey(VehicleModel, on_delete=models.CASCADE, related_name='vehicle')
-    company = models.OneToOneField(
-        Company, on_delete=models.CASCADE, related_name='vehicle')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='vehicle')
 
     objects = VehicleManager
 
@@ -200,7 +198,6 @@ class AbstractOrder(models.Model):
 
 
 class OrderStaff(AbstractOrder):
-
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order')
     settle_status = models.CharField(max_length=8, default='unsettle', choices=Constants.SETTLE_STATUS)
     staff_confirm = models.CharField(max_length=6, default='wait', choices=Constants.STAFF_CONFIRM)
@@ -211,7 +208,6 @@ class OrderStaff(AbstractOrder):
 
 
 class OrderVehicle(AbstractOrder):
-
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='order')
     pickup_type = models.CharField(max_length=4, default='self', choices=Constants.PICK_TYPE)
 
