@@ -97,7 +97,7 @@ class Company(models.Model):
     phone = PhoneNumberField(unique=True)
     email = models.EmailField(unique=True)
     addr = models.CharField(max_length=256)
-    parking = models.CharField(max_length=256, help_text='Parking Address()')
+    parking = models.CharField(max_length=256, help_text='Parking Address')
     verifycode = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist')
 
     
@@ -112,13 +112,14 @@ class Company(models.Model):
 
 
 class Staff(User):
+    userId = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, unique=True, help_text='name')  # 姓名
     phone = PhoneNumberField()  # 电话
-    nickname = models.CharField(max_length=64, help_text='nick name')  # 昵称
+    nickname = models.CharField(max_length=64, help_text='nick name',unique=True)  # 昵称
     introduction = models.TextField(max_length=256, blank=True)  # 自我介绍
     photo = models.ImageField(upload_to='photos', null=True, blank=True)  # 头像
     status = models.CharField(max_length=16, default='disabled', blank=True, null=True, choices=Constants.STATUS)  # 状态
-    hour_pay = models.FloatField(blank=True, default=0.0)  # 时薪
+    day_pay = models.FloatField(blank=True, default=400.0)  # 时薪
     work_status = models.CharField(max_length=5, default='start', choices=Constants.WORK_STATUS)
     driver = models.BooleanField(
         default=False, verbose_name='Driver ?')  # 是否 司机
@@ -135,11 +136,17 @@ class Staff(User):
     def __str__(self):
         return self.name
 
+    def save(self):
+        super(Staff, self).save()
+        self.nickname = '员工%04d' % self.userId
+        super(Staff, self).save()
+
 class VehicleModel(models.Model):
     model = models.CharField(default='Car', max_length=6, choices=Constants.MODEL)  # 类型
     name = models.CharField(max_length=64)  # 名称
     num = models.IntegerField(default=5, verbose_name='number of passenger')  # 乘坐人数
-    amount = models.FloatField()  # 价格
+    day_pay = models.FloatField(default=120.0)  # 价格
+    pickup_pay = models.FloatField(default=100.0)
     photo = models.ImageField(upload_to='vehicle', blank=True)  # 图片
 
     class Meta:
@@ -175,8 +182,9 @@ class Vehicle(models.Model):
         return self.traffic_plate_no
 
 class AbstractOrder(models.Model):
-    order_id = models.CharField(max_length=16, default=get_random_string(length=16, allowed_chars='0123456789'))
-    amount = models.FloatField()
+    id = models.AutoField(primary_key=True)
+    orderId = models.CharField(max_length=16)
+    amount = models.FloatField(default=0.0)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     status = models.CharField(max_length=8, default='open', choices=Constants.ORDER_STATUS)
@@ -189,7 +197,7 @@ class AbstractOrder(models.Model):
         abstract = True
 
     def __str__(self):
-        return self.order_id
+        return self.orderId
 
     def clean(self):
         super().clean()
@@ -198,29 +206,76 @@ class AbstractOrder(models.Model):
             if self.start_time > self.end_time:
                 raise ValidationError('the end time must be after start time')
 
+def staffAmount(duration, pay):
+    days, hours, minutes = Tools.convert_timedelta(duration, 8)
+    print(Tools.convert_timedelta(duration, 8))
+    return round((pay * days) + (pay/24 * hours) + (pay/8/60 * minutes), 2)
+
+class OrderStaffManager(models.Manager):
+    pass
 
 class OrderStaff(AbstractOrder):
-    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order')
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order', to_field='name', limit_choices_to={'status': 'enabled','work_status':'start'})
     settle_status = models.CharField(max_length=8, default='unsettle', choices=Constants.SETTLE_STATUS)
     staff_confirm = models.CharField(max_length=6, default='wait', choices=Constants.STAFF_CONFIRM)
+    objects = OrderStaffManager
 
     class Meta:
         verbose_name = 'Staff Orders'
         verbose_name_plural = 'Staff Orders'
 
+    def save(self):
+        super(OrderStaff, self).save()
+        self.orderId = '%s-%04d' % (datetime.datetime.now().strftime('%Y-%m-%d') , self.id)
+        self.amount = staffAmount(self.end_time - self.start_time, self.staff.day_pay)
+        super(OrderStaff, self).save()
+
+    def clean(self):
+        super().clean()
+
+        if self.staff:
+            qs = OrderStaff.objects.exclude(id=self.id).filter(
+                Q(start_time__lte=self.start_time, end_time__gte=self.start_time)
+                | Q(start_time__lte=self.end_time, end_time__gte=self.end_time)
+                | Q(start_time__gte=self.start_time, end_time__lte=self.end_time))
+            if qs:
+                raise ValidationError('%s is busy' % qs[0].staff.name)
+
+def vehicleAmount(duration, pay):
+    days, hours, minutes = Tools.convert_timedelta(duration, 24)
+    print(Tools.convert_timedelta(duration, 24))
+    return days, round((pay * days) + (pay/24 * hours), 2)
 
 class OrderVehicle(AbstractOrder):
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='order')
-    pickup_type = models.CharField(max_length=4, default='self', choices=Constants.PICK_TYPE)
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='order', to_field='traffic_plate_no', limit_choices_to={'status': 'enabled'})
+    pickup_type = models.CharField(max_length=5, default='self', choices=Constants.PICK_TYPE)
+    pickup_pay = models.FloatField(default=100.0)
+    duration = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = 'Vehicle Orders'
         verbose_name_plural = 'Vehicle Orders'
 
+    def save(self):
+        super(OrderVehicle, self).save()
+        self.orderId = '%s-%04d' % (datetime.datetime.now().strftime('%Y-%m-%d') , self.id)
+        self.duration, self.amount = vehicleAmount(self.end_time - self.start_time, self.vehicle.model.day_pay)
+        if self.pickup_type == 'self':
+            self.pickup_pay = 0.0
+        else :
+            self.pickup_pay = self.vehicle.model.pickup_pay
+        super(OrderVehicle, self).save()
 
-class Client(User):
-    phone = PhoneNumberField()
-
+    def clean(self):
+        super().clean()
+        
+        if self.vehicle:
+            qs = OrderVehicle.objects.exclude(id=self.id).filter(
+                Q(start_time__lte=self.start_time, end_time__gte=self.start_time)
+                | Q(start_time__lte=self.end_time, end_time__gte=self.end_time)
+                | Q(start_time__gte=self.start_time, end_time__lte=self.end_time))
+            if qs:
+                raise ValidationError('%s is busy' % qs[0].vehicle.traffic_plate_no)
 
 class ClientCompany(models.Model):
     name = models.CharField(max_length=128,unique=True)
@@ -229,5 +284,29 @@ class ClientCompany(models.Model):
     phone = PhoneNumberField(unique=True)
     addr = models.CharField(max_length=256)
     email = models.EmailField(unique=True)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE,blank=True,null=True)
     
+    class Meta:
+        verbose_name = 'Client Company'
+        verbose_name_plural = 'Client Company'
+
+    def __str__(self):
+        return self.name
+
+class Client(User):
+    userId = models.AutoField(primary_key=True)
+    nickname = models.CharField(max_length=64, unique=True)  # 昵称
+    phone = PhoneNumberField()
+    is_admin = models.BooleanField(default=False)
+    company = models.ForeignKey(ClientCompany, on_delete=models.CASCADE,blank=True,null=True)
+
+    class Meta:
+        verbose_name = 'Client'
+        verbose_name_plural = 'Client'
+
+    def __str__(self):
+        return self.nickname
+
+    def save(self):
+        super(Client, self).save()
+        self.nickname = '用户%08d' % self.userId 
+        super(Client, self).save()

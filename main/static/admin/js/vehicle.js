@@ -6,8 +6,6 @@
 
         $('body').on('click', function(e) {
             setupVehicle(getStartTime(), getEndTime())
-            setupDriver(getStartTime(), getEndTime())
-            setupTourguide(getStartTime(), getEndTime())
         });
 
         function setupUrl(id, url, key, start, end) {
@@ -22,21 +20,7 @@
             if (setupVehicle.url == null) {
                 setupVehicle.url = $('#lookup_id_vehicle').attr('href');
             }
-            setupUrl('#lookup_id_vehicle', setupVehicle.url, 'vehicle_task__', start, end)
-        }
-
-        function setupDriver(start, end) {
-            if (setupDriver.url == null) {
-                setupDriver.url = $('#lookup_id_driver').attr('href');
-            }
-            setupUrl('#lookup_id_driver', setupDriver.url, 'driver_task__', start, end)
-        }
-
-        function setupTourguide(start, end) {
-            if (setupTourguide.url == null) {
-                setupTourguide.url = $('#lookup_id_tourguide').attr('href');
-            }
-            setupUrl('#lookup_id_tourguide', setupTourguide.url, 'tourguide_task__', start, end)
+            setupUrl('#lookup_id_vehicle', setupVehicle.url, 'order__', start, end)
         }
 
         function getStartTime() {

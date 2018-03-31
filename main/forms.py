@@ -34,6 +34,18 @@ class StaffCreationForm(UserCreationForm):
         user.company = company
         return user
 
+class ClientCreationForm(UserCreationForm):
+    phone = PhoneNumberField(
+        widget=PhoneNumberPrefixWidget(),
+        label='Phone number',
+        required=False,
+        initial='+971'
+    )
+
+    class Meta:
+        model = main.Staff
+        fields = '__all__'
+
 class CompanyForm(forms.ModelForm):
 
     tel = PhoneNumberField(
@@ -53,3 +65,29 @@ class CompanyForm(forms.ModelForm):
     class Meta:
         model = main.Company
         fields = '__all__'
+
+class ClientCompanyForm(forms.ModelForm):
+
+    tel = PhoneNumberField(
+        widget=PhoneNumberPrefixWidget(),
+        label='Tel number',
+        required=False,
+        initial='+971'
+    )
+
+    phone = PhoneNumberField(
+        widget=PhoneNumberPrefixWidget(),
+        label='Phone number',
+        required=False,
+        initial='+971'
+    )
+
+    class Meta:
+        model = main.Company
+        fields = '__all__'
+
+class OrderStaffForm(forms.ModelForm):
+    
+    class Meta:
+        modle = main.OrderStaff
+        excloud = ['orderId']

@@ -254,6 +254,10 @@ JET_SIDE_MENU_ITEMS = {
             {'name': 'main.orderstaff'},
             {'name': 'main.ordervehicle'},
         ]},
+        {'label': _('Client'), 'items': [
+            {'name': 'main.client'},
+            {'name': 'main.clientcompany'},
+        ]},
     ],
 }
 

@@ -46,8 +46,8 @@ WORK_STATUS = [
 ]
 
 PICK_TYPE = [
-    ('self', 'Pick up car by yourself'),
-    ('shop', 'Go to the shop'),
+    ('self', 'self'),
+    ('visit', 'visit'),
 ]
 
 CLIENT_TYPE = [
@@ -56,7 +56,7 @@ CLIENT_TYPE = [
 ]
 
 STAFF_CONFIRM = [
-    ('wait', 'Waiting for confirmation'),
+    ('wait', 'Waiting'),
     ('agree', 'Agree'),
     ('refuse', 'Refuse'),
 ]
