@@ -13,7 +13,7 @@ from django_object_actions import DjangoObjectActions
 
 from .site import BaseAdminSite
 from .base_admin import BaseModelAdmin
-from main.forms import StaffCreationForm
+from main.forms import StaffCreationForm, CompanyForm
 import main.models as main
 
 site = BaseAdminSite(name='admin')
@@ -164,7 +164,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                     'password2',
                     'name',
                     'phone',
-                    'verifycode'
+                    'verifycode',
                 ]
             }
         ],
@@ -348,12 +348,16 @@ class VehicleModelAdmin(PermissionAdmin):
 
 @admin.register(main.Company, site=site)
 class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
+
+    add_form = CompanyForm
+
     fields = [
         'name',
         'tel',
         'phone',
         'email',
         'addr',
+        'parking',
         'verifycode'
     ]
 
@@ -363,6 +367,7 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'email',
         'addr',
+        'parking',
         'verifycode'
     ]
 
@@ -372,12 +377,23 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'email',
         'addr',
+        'parking',
         'verifycode'
     ]
 
     readonly_fields = [
         'verifycode'
     ]
+
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Use special form during user creation
+        """
+        defaults = {}
+        if obj is None:
+            defaults['form'] = self.add_form
+        defaults.update(kwargs)
+        return super().get_form(request, obj, **defaults)
 
     def change_code(self, request, obj):
         from django.utils.crypto import get_random_string

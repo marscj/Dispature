@@ -10,6 +10,8 @@ from django.core.exceptions import ValidationError
 from django.utils.crypto import get_random_string
 from django.utils.html import format_html
 
+from phonenumber_field.modelfields import PhoneNumberField
+
 import time
 import uuid
 import datetime
@@ -90,13 +92,14 @@ class CompanyManager(models.Manager):
     pass
 
 class Company(models.Model):
-    name = models.CharField(max_length=128)
-    tel = models.CharField(max_length=16)
-    phone = models.CharField(max_length=16)
-    email = models.EmailField()
+    name = models.CharField(max_length=128,unique=True)
+    tel = PhoneNumberField(unique=True)
+    phone = PhoneNumberField(unique=True)
+    email = models.EmailField(unique=True)
     addr = models.CharField(max_length=256)
-    verifycode = models.CharField(
-        max_length=4, unique=True, default=Tools.get_code, help_text='For Staff Regist')
+    parking = models.CharField(max_length=256, help_text='Parking Address()')
+    verifycode = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist')
+
     
     objects = CompanyManager
 
@@ -110,8 +113,7 @@ class Company(models.Model):
 
 class Staff(User):
     name = models.CharField(max_length=64, unique=True, help_text='name')  # 姓名
-    phone = models.CharField(max_length=16, unique=True,
-                             help_text='your phone')  # 电话
+    phone = PhoneNumberField()  # 电话
     nickname = models.CharField(max_length=64, help_text='nick name')  # 昵称
     introduction = models.TextField(max_length=256, blank=True)  # 自我介绍
     photo = models.ImageField(upload_to='photos', null=True, blank=True)  # 头像
@@ -214,3 +216,18 @@ class OrderVehicle(AbstractOrder):
     class Meta:
         verbose_name = 'Vehicle Orders'
         verbose_name_plural = 'Vehicle Orders'
+
+
+class Client(User):
+    phone = PhoneNumberField()
+
+
+class ClientCompany(models.Model):
+    name = models.CharField(max_length=128,unique=True)
+    contacts = models.CharField(max_length=32)
+    tel = PhoneNumberField(unique=True)
+    phone = PhoneNumberField(unique=True)
+    addr = models.CharField(max_length=256)
+    email = models.EmailField(unique=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE,blank=True,null=True)
+    

@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'django_filters',
     'django_object_actions',
 
+    'phonenumber_field', #pip install django-phonenumber-field
+
     'home',
     'main',
 ]
@@ -141,6 +143,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
+
+# PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 
 LANGUAGE_CODE = 'en-us'
 
