@@ -407,7 +407,8 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
     def change_code(self, request, obj):
         from django.utils.crypto import get_random_string
         if request.user.is_superuser:
-            obj.verifycode = get_random_string(length=4)
+            obj.verifycode = get_random_string(
+                length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
             obj.save()
 
     change_code.label = "Change Verifycode"
@@ -644,7 +645,7 @@ class ClientInline(CompactInline):
 
 
 @admin.register(MainModel.ClientCompany, site=site)
-class ClientCompany(PermissionAdmin):
+class ClientCompany(DjangoObjectActions, PermissionAdmin):
 
     form = MainForm.ClientCompanyForm
 
@@ -675,3 +676,18 @@ class ClientCompany(PermissionAdmin):
     raw_id_fields = [
         'admin'
     ]
+
+    readonly_fields = [
+        'verifycode'
+    ]
+
+    def change_code(self, request, obj):
+        from django.utils.crypto import get_random_string
+        if request.user.is_superuser:
+            obj.verifycode = get_random_string(
+                length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+            obj.save()
+
+    change_code.label = "Change Verifycode"
+    change_code.short_description = "Change verifycode"
+    change_actions = ('change_code', )
