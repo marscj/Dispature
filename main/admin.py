@@ -144,15 +144,13 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
         [
             _('PersonInfo'), {
                 'fields': [
-                    'nickname',
-                    'email',
                     'photo',
-                    'driver',
-                    'tourguide',
                     'status',
                     'work_status',
                     'day_pay',
                     'company',
+                    'driver',
+                    'tourguide',
                     'introduction'
                 ]
             }
@@ -599,7 +597,6 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
                     'username',
                     'password',
                     'phone',
-                    'nickname',
                     'client_type',
                     'company',
                     'is_active',
@@ -641,7 +638,7 @@ class ClientInline(CompactInline):
     extra = 0
 
     fields = [
-        'nickname',
+        'name',
         'phone',
     ]
 

@@ -119,8 +119,6 @@ class Staff(User):
     userId = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, unique=True, help_text='name')  # 姓名
     phone = PhoneNumberField()  # 电话
-    nickname = models.CharField(
-        max_length=64, help_text='nick name', unique=True)  # 昵称
     introduction = models.TextField(max_length=256, blank=True)  # 自我介绍
     photo = models.ImageField(upload_to='photos', null=True, blank=True)  # 头像
     status = models.CharField(max_length=16, default='disabled',
@@ -277,8 +275,8 @@ class ClientCompany(models.Model):
 
 class Client(User):
     userId = models.AutoField(primary_key=True)
-    nickname = models.CharField(max_length=64, unique=True)  # 昵称
-    phone = PhoneNumberField(unique=True, verbose_name='Phone number *')
+    name = models.CharField(max_length=64, unique=True)  # 昵称
+    phone = PhoneNumberField(unique=True, verbose_name='Phone number')
     client_type = models.CharField(
         max_length=10, default='personal', choices=Constants.CLIENT_TYPE)
     company = models.ForeignKey(
@@ -289,4 +287,4 @@ class Client(User):
         verbose_name_plural = 'Client'
 
     def __str__(self):
-        return self.nickname
+        return self.name

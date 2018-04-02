@@ -49,11 +49,11 @@ class StaffCreationForm(UserCreationForm):
         return verifycode
 
     def save(self, commit=True):
-        user = super().save(commit=True)
+        user = super().save(commit=False)
         verifycode = self.cleaned_data['verifycode']
-        company = main.Company.objects.get(verifycode=verifycode)
-        user.company = company
-        user.nickname = '员工%04d' % user.userId
+        company = MainModel.Company.objects.get(verifycode=verifycode)
+        if company:
+            user.company = company
 
         return user
 
@@ -73,7 +73,7 @@ class ClientCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=True)
 
-        user.nickname = '用户%08d' % user.userId
+        user.name = '用户%08d' % user.userId
         if user.company:
             user.client_type = 'company'
         else:
@@ -153,9 +153,9 @@ class ClientCompanyForm(forms.ModelForm):
             if admin.company:
                 if admin.company.name != self.cleaned_data['name']:
                     raise ValidationError(
-                        '%s is not this company' % admin.nickname)
+                        '%s is not this company' % admin.name)
             else:
-                raise ValidationError('%s is personal' % admin.nickname)
+                raise ValidationError('%s is personal' % admin.name)
 
         return admin
 
