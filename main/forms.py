@@ -1,16 +1,22 @@
 from django import forms
 from django.forms.models import ModelForm
-from django.contrib.auth.forms import UserCreationForm
+from django.db.models import Q
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.contenttypes.models import ContentType
 
-import main.models as main
+from django.core.exceptions import ValidationError
+
+import main.models as MainModel
 from .validators import verifycode_validate
 
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
 
-class StaffCreationForm(UserCreationForm):
-    verifycode = forms.CharField(max_length=4, required=True,widget=forms.TextInput, help_text='company verifycode')
+from .utils import Tools
+import datetime
+
+
+class StaffChangeForm(UserChangeForm):
     phone = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
         label='Phone number',
@@ -19,8 +25,23 @@ class StaffCreationForm(UserCreationForm):
     )
 
     class Meta:
-        model = main.Staff
-        fields = ('username', 'password1', 'password2','name', 'phone', 'verifycode')
+        model = MainModel.Staff
+        fields = '__all__'
+
+
+class StaffCreationForm(UserCreationForm):
+    verifycode = forms.CharField(max_length=4, required=True,
+                                 widget=forms.TextInput, help_text='company verifycode')
+    phone = PhoneNumberField(
+        widget=PhoneNumberPrefixWidget(),
+        label='Phone number',
+        required=False,
+        initial='+971'
+    )
+
+    class Meta:
+        model = MainModel.Staff
+        fields = ('username', 'password1', 'password2', 'name', 'phone', 'verifycode')
 
     def clean_code(self):
         verifycode = self.cleaned_data['verifycode']
@@ -28,23 +49,61 @@ class StaffCreationForm(UserCreationForm):
         return verifycode
 
     def save(self, commit=True):
-        user = super().save(commit=False)
+        user = super().save(commit=True)
         verifycode = self.cleaned_data['verifycode']
         company = main.Company.objects.get(verifycode=verifycode)
         user.company = company
+        user.nickname = '员工%04d' % user.userId
+
         return user
+
 
 class ClientCreationForm(UserCreationForm):
     phone = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
-        label='Phone number',
+        label='Phone number*',
         required=False,
         initial='+971'
     )
 
     class Meta:
-        model = main.Staff
+        model = MainModel.Client
         fields = '__all__'
+
+    def save(self, commit=True):
+        user = super().save(commit=True)
+
+        user.nickname = '用户%08d' % user.userId
+        if user.company:
+            user.client_type = 'company'
+        else:
+            user.client_type = 'personal'
+
+        return user
+
+
+class ClientChangeForm(UserChangeForm):
+    phone = PhoneNumberField(
+        widget=PhoneNumberPrefixWidget(),
+        label='Phone number*',
+        required=False,
+        initial='+971'
+    )
+
+    class Meta:
+        model = MainModel.Client
+        fields = '__all__'
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        if user.company:
+            user.client_type = 'company'
+        else:
+            user.client_type = 'personal'
+
+        return user
+
 
 class CompanyForm(forms.ModelForm):
 
@@ -63,31 +122,152 @@ class CompanyForm(forms.ModelForm):
     )
 
     class Meta:
-        model = main.Company
+        model = MainModel.Company
         fields = '__all__'
+
 
 class ClientCompanyForm(forms.ModelForm):
 
     tel = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
-        label='Tel number',
+        label='Tel number*',
         required=False,
         initial='+971'
     )
 
     phone = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
-        label='Phone number',
+        label='Phone number*',
         required=False,
         initial='+971'
     )
 
     class Meta:
-        model = main.Company
+        model = MainModel.Company
         fields = '__all__'
 
+    def clean_admin(self):
+        admin = self.cleaned_data['admin']
+
+        if admin:
+            if admin.company:
+                if admin.company.name != self.cleaned_data['name']:
+                    raise ValidationError(
+                        '%s is not this company' % admin.nickname)
+            else:
+                raise ValidationError('%s is personal' % admin.nickname)
+
+        return admin
+
+
 class OrderStaffForm(forms.ModelForm):
-    
+
+    orderId = forms.CharField(max_length=32)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['orderId'].initial = self.initOrderId()
+
     class Meta:
-        modle = main.OrderStaff
-        excloud = ['orderId']
+        modle = MainModel.OrderStaff
+        fields = '__all__'
+
+    def initOrderId(self):
+        now = datetime.datetime.now()
+        start_time = datetime.datetime(now.year, now.month, now.day, 0, 0, 0)
+        end_time = datetime.datetime(now.year, now.month, now.day, 23, 59, 59)
+        count = MainModel.OrderStaff.objects.filter(create_time__range=(start_time, end_time)).count()
+        count = 1 if count == 0 else count + 1
+        return '%s-%04d' % (datetime.datetime.now().strftime('%Y-%m-%d'), count)
+
+    def get_amount(self, duration, pay):
+        days, hours, minutes = Tools.convert_timedelta(duration, 8)
+        return days, hours, minutes, round((pay * days) + (pay / 24 * hours) + (pay / 8 / 60 * minutes), 2)
+
+    def clean(self):
+        super().clean()
+
+        start_time = self.cleaned_data['start_time']
+        end_time = self.cleaned_data['end_time']
+
+        if start_time > end_time:
+            raise ValidationError('the end time must be after start time')
+
+        qs = MainModel.OrderStaff.objects.exclude(orderId=self.cleaned_data['orderId']).filter(
+            Q(start_time__lte=start_time, end_time__gte=start_time)
+            | Q(start_time__lte=end_time, end_time__gte=end_time)
+            | Q(start_time__gte=start_time, end_time__lte=end_time))
+        if qs:
+            raise ValidationError('%s is busy' % qs[0].staff.name)
+
+    def save(self, commit=True):
+        order = super().save(commit=False)
+        days, hours, minutes, amount = self.get_amount(
+            self.cleaned_data['end_time'] - self.cleaned_data['start_time'], order.staff.day_pay)
+
+        order.duration = '%02d:%02d:%02d' % (days, hours, minutes)
+
+        order.amount = amount
+
+        return order
+
+
+class OrderVehicleForm(forms.ModelForm):
+
+    orderId = forms.CharField(max_length=32)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['orderId'].initial = self.initOrderId()
+
+    class Meta:
+        model = MainModel.OrderVehicle
+        exclude = '__all__'
+
+    def initOrderId(self):
+        now = datetime.datetime.now()
+        start_time = datetime.datetime(now.year, now.month, now.day, 0, 0, 0)
+        end_time = datetime.datetime(now.year, now.month, now.day, 23, 59, 59)
+        count = MainModel.OrderVehicle.objects.filter(create_time__range=(start_time, end_time)).count()
+        count = 1 if count == 0 else count + 1
+        return '%s-%04d' % (datetime.datetime.now().strftime('%Y-%m-%d'), count)
+
+    def get_amount(self, duration, pay):
+        days, hours, minutes = Tools.convert_timedelta(duration, 24)
+        return days, hours, minutes, round((pay * days) + (pay / 24 * hours), 2)
+
+    def clean(self):
+        super().clean()
+
+        start_time = self.cleaned_data['start_time']
+        end_time = self.cleaned_data['end_time']
+
+        if start_time > end_time:
+            raise ValidationError('the end time must be after start time')
+
+        qs = MainModel.OrderVehicle.objects.exclude(orderId=self.cleaned_data['orderId']).filter(
+            Q(start_time__lte=start_time, end_time__gte=start_time)
+            | Q(start_time__lte=end_time, end_time__gte=end_time)
+            | Q(start_time__gte=start_time, end_time__lte=end_time))
+        if qs:
+            raise ValidationError('%s is busy' %
+                                  qs[0].vehicle.traffic_plate_no)
+
+    def save(self, commit=True):
+        order = super().save(commit=False)
+
+        days, hours, minutes, amount = self.get_amount(
+            self.cleaned_data['end_time'] - self.cleaned_data['start_time'], order.vehicle.model.day_pay)
+
+        order.duration = '%02d:%02d:%02d' % (days, hours, minutes)
+
+        if order.pickup_type == 'self':
+            order.pickup_pay = 0.0
+            order.amount = amount
+        else:
+            order.pickup_pay = order.vehicle.model.pickup_pay
+            order.amount = amount + order.vehicle.model.pickup_pay
+
+        super().save(commit=True)
+
+        return order

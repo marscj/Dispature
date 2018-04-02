@@ -14,7 +14,7 @@ from django_object_actions import DjangoObjectActions
 
 from .site import BaseAdminSite
 from .base_admin import BaseModelAdmin
-import main.forms  as MainForm
+import main.forms as MainForm
 import main.models as MainModel
 
 site = BaseAdminSite(name='admin')
@@ -59,7 +59,7 @@ class PermissionAdmin(BaseModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         if obj is None:
             return ()
-        
+
         return self.readonly_fields
         # return [f.name for f in self.model._meta.fields] + self.readonly_fields
 
@@ -79,7 +79,7 @@ class PermissionAdmin(BaseModelAdmin):
             defaults['form'] = self.add_form
         defaults.update(kwargs)
         return super().get_form(request, obj, **defaults)
-    
+
     def get_fields(self, request, obj=None):
         if not obj and self.add_fields:
             return self.add_fields
@@ -115,6 +115,7 @@ class PPIInline(admin.StackedInline):
 class StaffAdmin(BaseUserAdmin, PermissionAdmin):
 
     add_form = MainForm.StaffCreationForm
+    form = MainForm.StaffChangeForm
 
     inlines = [
         PPIInline,
@@ -312,27 +313,27 @@ class VehicleAdmin(PermissionAdmin):
         'status',
     ]
 
-    other_list_filter = [
-        'order__start_time',
-        'order__end_time'
-    ]
+    # other_list_filter = [
+    #     'order__start_time',
+    #     'order__end_time'
+    # ]
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
+    # def get_queryset(self, request):
+    #     qs = super().get_queryset(request)
 
-        if IS_POPUP_VAR not in request:
-            start_time = request.GET.get('order__start_time')
-            end_time = request.GET.get('order__end_time')
+    #     if IS_POPUP_VAR not in request:
+    #         start_time = request.GET.get('order__start_time')
+    #         end_time = request.GET.get('order__end_time')
 
-            if start_time is not None and end_time is not None:
-                if start_time > end_time:
-                    start_time, end_time = end_time, start_time
+    #         if start_time is not None and end_time is not None:
+    #             if start_time > end_time:
+    #                 start_time, end_time = end_time, start_time
 
-                qs = MainModel.Vehicle.objects.exclude(
-                    Q(order__start_time__range=(start_time, end_time))
-                    | Q(order__end_time__range=(start_time, end_time)))
-                return qs
-        return qs
+    #             qs = MainModel.Vehicle.objects.exclude(
+    #                 Q(order__start_time__range=(start_time, end_time))
+    #                 | Q(order__end_time__range=(start_time, end_time)))
+    #             return qs
+    #     return qs
 
 
 @admin.register(MainModel.VehicleModel, site=site)
@@ -369,7 +370,7 @@ class VehicleModelAdmin(PermissionAdmin):
 @admin.register(MainModel.Company, site=site)
 class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
 
-    add_form = MainForm.CompanyForm
+    form = MainForm.CompanyForm
 
     fields = [
         'name',
@@ -426,15 +427,18 @@ class OrderStaffAdmin(PermissionAdmin):
         'amount',
         'start_time',
         'end_time',
+        'duration',
         'status',
         'settle_status',
         'pay_status',
         'staff_confirm',
         'staff',
+        'client',
         'remake',
     ]
 
     add_fields = [
+        'orderId',
         'start_time',
         'end_time',
         'status',
@@ -442,12 +446,16 @@ class OrderStaffAdmin(PermissionAdmin):
         'pay_status',
         'staff_confirm',
         'staff',
+        'client',
         'remake',
     ]
 
     list_display = [
         '__str__',
+        'staff',
+        'client',
         'amount',
+        'duration',
         'start_time',
         'end_time',
         'status',
@@ -459,10 +467,13 @@ class OrderStaffAdmin(PermissionAdmin):
 
     list_display_links = [
         '__str__',
+        'staff',
+        'client',
         'amount',
         'start_time',
         'end_time',
         'remake',
+        'duration',
     ]
 
     list_editable = [
@@ -474,18 +485,20 @@ class OrderStaffAdmin(PermissionAdmin):
 
     raw_id_fields = [
         'staff',
+        'client'
+    ]
+
+    readonly_fields = [
+        'duration',
     ]
 
     date_hierarchy = 'create_time'
-    
+
 
 @admin.register(MainModel.OrderVehicle, site=site)
 class OrderVehicleAdmin(PermissionAdmin):
 
-    class Media:
-        js = [
-            'admin/js/vehicle.js'
-        ]
+    form = MainForm.OrderVehicleForm
 
     fields = [
         'orderId',
@@ -498,26 +511,30 @@ class OrderVehicleAdmin(PermissionAdmin):
         'status',
         'pay_status',
         'vehicle',
+        'client',
         'remake',
     ]
 
     add_fields = [
+        'orderId',
         'pickup_type',
         'start_time',
         'end_time',
         'status',
         'pay_status',
         'vehicle',
+        'client',
         'remake',
     ]
 
     list_display = [
         '__str__',
         'vehicle',
+        'client',
         'amount',
+        'duration',
         'start_time',
         'end_time',
-        'duration',
         'pickup_pay',
         'pickup_type',
         'status',
@@ -533,28 +550,32 @@ class OrderVehicleAdmin(PermissionAdmin):
         'pickup_pay',
         'duration',
         'vehicle',
+        'client',
         'remake',
     ]
 
     list_editable = [
-        'status',
-        'pickup_type',
         'pay_status',
+        'status',
     ]
 
     raw_id_fields = [
         'vehicle',
+        'client'
     ]
 
     readonly_fields = [
-        'duration'
+        'duration',
+        'pickup_pay',
     ]
 
     date_hierarchy = 'create_time'
 
+
 @admin.register(MainModel.Client, site=site)
 class ClientAdmin(BaseUserAdmin, PermissionAdmin):
     add_form = MainForm.ClientCreationForm
+    form = MainForm.ClientChangeForm
 
     add_fieldsets = [
         [
@@ -579,9 +600,9 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
                     'password',
                     'phone',
                     'nickname',
+                    'client_type',
+                    'company',
                     'is_active',
-                    'is_admin',
-                    'company'
                 )
             }
         ],
@@ -591,17 +612,29 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
         '__str__',
         'phone',
         'is_active',
-        'is_admin',
+        'client_type',
         'company'
     ]
 
     list_display_links = [
-         '__str__',
+        '__str__',
         'phone',
         'is_active',
-        'is_admin',
+        'client_type',
         'company'
     ]
+
+    readonly_fields = [
+        'client_type',
+        'password',
+        'username'
+    ]
+
+    list_filter = [
+        'client_type',
+        'company'
+    ]
+
 
 class ClientInline(CompactInline):
     model = MainModel.Client
@@ -610,13 +643,13 @@ class ClientInline(CompactInline):
     fields = [
         'nickname',
         'phone',
-        'is_admin'
     ]
+
 
 @admin.register(MainModel.ClientCompany, site=site)
 class ClientCompany(PermissionAdmin):
 
-    add_form = MainForm.ClientCompanyForm
+    form = MainForm.ClientCompanyForm
 
     inlines = [
         ClientInline,
@@ -628,7 +661,8 @@ class ClientCompany(PermissionAdmin):
         'tel',
         'phone',
         'addr',
-        'email'
+        'email',
+        'admin'
     ]
 
     list_display_links = [
@@ -637,6 +671,10 @@ class ClientCompany(PermissionAdmin):
         'tel',
         'phone',
         'addr',
-        'email'
+        'email',
+        'admin'
     ]
-    
+
+    raw_id_fields = [
+        'admin'
+    ]

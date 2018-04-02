@@ -15,11 +15,11 @@ LANGUAGE = [
 ]
 
 MODEL = [
-    ('car','Car'),
-    ('suv','SUV'),
-    ('mpv','MPV'),
-    ('van','VAN'),
-    ('bus','BUS'),
+    ('car', 'Car'),
+    ('suv', 'SUV'),
+    ('mpv', 'MPV'),
+    ('van', 'VAN'),
+    ('bus', 'BUS'),
     ('luxury', 'Luxury')
 ]
 
@@ -35,6 +35,7 @@ SETTLE_STATUS = [
 ]
 
 PAY_STATUS = [
+    ('unpaid', 'Unpaid'),
     ('paid', 'Paid'),
     ('refunding', 'Refunding'),
     ('refunded', 'Refunded'),
@@ -59,4 +60,9 @@ STAFF_CONFIRM = [
     ('wait', 'Waiting'),
     ('agree', 'Agree'),
     ('refuse', 'Refuse'),
+]
+
+CLIENT_TYPE = [
+    ('personal', 'Personal'),
+    ('company', 'Company'),
 ]
