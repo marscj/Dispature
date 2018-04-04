@@ -59,7 +59,7 @@ CLIENT_TYPE = [
 STAFF_CONFIRM = [
     ('wait', 'Waiting'),
     ('agree', 'Agree'),
-    ('refuse', 'Refuse'),
+    ('disagree', 'Disagree'),
 ]
 
 CLIENT_TYPE = [

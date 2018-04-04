@@ -139,7 +139,7 @@ class Staff(User):
         verbose_name_plural = 'Staff'
 
     def __str__(self):
-        return self.name
+        return self.username
 
 
 class VehicleModel(models.Model):
@@ -190,7 +190,7 @@ class Vehicle(models.Model):
 
 
 class AbstractOrder(models.Model):
-    orderId = models.CharField(max_length=32)
+    orderId = models.CharField(max_length=32, unique=True)
     amount = models.FloatField(default=0.0)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
@@ -218,7 +218,7 @@ class OrderStaff(AbstractOrder):
     settle_status = models.CharField(
         max_length=8, default='unsettle', choices=Constants.SETTLE_STATUS)
     staff_confirm = models.CharField(
-        max_length=6, default='wait', choices=Constants.STAFF_CONFIRM)
+        max_length=8, default='wait', choices=Constants.STAFF_CONFIRM)
     duration = models.CharField(max_length=128)
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order', limit_choices_to={
                               'status': 'enabled', 'work_status': 'start'})
@@ -264,6 +264,7 @@ class ClientCompany(models.Model):
                               related_name='client_company', blank=True, null=True)
     verifycode = models.CharField(max_length=4, unique=True,
                                   default=Tools.get_code, help_text='For The Client Regist')
+    account = models.FloatField(default=0.0)                         
 
     class Meta:
         verbose_name = 'Client Company'

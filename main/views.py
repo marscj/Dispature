@@ -12,8 +12,8 @@ from rest_framework.decorators import list_route, api_view, detail_route
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (IsStaffSelf, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
-from .serializers import (DLISerializer, StaffSerializer,VehicleSerializer, TLISerializer,DLISerializer, PPISerializer)
-from .models import Staff, Vehicle, TLI, DLI, PPI
+from .serializers import (OrderStaffSerializer, StaffSerializer,VehicleSerializer, TLISerializer,DLISerializer, PPISerializer)
+import main.models as MainModle
 from .forms import StaffCreationForm
 
 from rest_framework.renderers import JSONRenderer
@@ -23,23 +23,25 @@ class Utf8JSONRenderer(JSONRenderer):
     charset = 'utf-8'
 
 
-class BaseModelViewSet(viewsets.ModelViewSet, views.APIView):
+# class BaseModelViewSet(viewsets.ModelViewSet, views.APIView):
 
-    def get_permissions(self):
-        if self.action == 'list':
-            permission_classes = [IsStaffAdmin]
-        else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
+#     def get_permissions(self):
+#         if self.action == 'list':
+#             permission_classes = [IsStaffAdmin]
+#         else:
+#             permission_classes = [IsAuthenticated]
+#         return [permission() for permission in permission_classes]
+
+class BaseModelViewSet(viewsets.ModelViewSet):
+    renderer_classes = [Utf8JSONRenderer,]
 
 
-class StaffViewSet(viewsets.ModelViewSet):
+class StaffViewSet(BaseModelViewSet):
 
-    queryset = Staff.objects.all()
+    queryset = MainModle.Staff.objects.all()
     serializer_class = StaffSerializer
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = ['id', 'full_name', 'phone', 'status',
-                     'is_driver', 'is_tourguide', 'is_operator']
+    filter_fields = '__all__'
     search_fields = '__all__'
     ordering_fields = '__all__'
 
@@ -57,11 +59,20 @@ class StaffViewSet(viewsets.ModelViewSet):
 
 
 class VehicleViewSet(BaseModelViewSet):
-    queryset = Vehicle.objects.all()
+    queryset = MainModle.Vehicle.objects.all()
     serializer_class = VehicleSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = ['id', 'traffic_plate_no', 'model_name', 'model_year',
-                     'num_of_pass', 'exp_date', 'policy_no', 'rate', 'status']
+    filter_fields = '__all__'
+    search_fields = '__all__'
+    ordering_fields = '__all__'
+
+class OrderStaffViewSet(BaseModelViewSet):
+    queryset = MainModle.OrderStaff.objects.all()
+    serializer_class = OrderStaffSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filter_fields = '__all__'
     search_fields = '__all__'
     ordering_fields = '__all__'
 

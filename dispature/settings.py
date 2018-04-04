@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_object_actions',
 
-    'phonenumber_field', #pip install django-phonenumber-field
+    'phonenumber_field',  # pip install django-phonenumber-field
 
     'home',
     'main',
@@ -157,7 +157,7 @@ USE_L10N = True
 
 USE_TZ = False
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 1024*1024*2
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1024 * 1024 * 2
 
 
 # Static files (CSS, JavaScript, Images)
@@ -236,10 +236,15 @@ JET_SIDE_MENU_ITEMS = {
             {'name': 'main.company'},
             {'name': 'main.staff'},
             {'name': 'main.vehicle'},
+            {'name': 'main.vehiclemodel'},
         ]},
         {'label': _('Orders'), 'items': [
             {'name': 'main.orderstaff'},
             {'name': 'main.ordervehicle'},
+        ]},
+        {'label': _('Client'), 'items': [
+            {'name': 'main.client'},
+            {'name': 'main.clientcompany'},
         ]},
     ],
 

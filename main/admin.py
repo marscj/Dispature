@@ -183,6 +183,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
 
     list_display = [
         '__str__',
+        'name',
         'phone',
         'driver',
         'tourguide',
@@ -193,6 +194,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
 
     list_display_links = [
         '__str__',
+        'name',
         'phone',
         'driver',
         'work_status',
@@ -211,33 +213,33 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
         'driver',
     ]
 
-    other_list_filter = [
-        'order__start_time',
-        'order__end_time',
-    ]
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-
-        if IS_POPUP_VAR not in request:
-            start_time = request.GET.get('order__start_time')
-            end_time = request.GET.get('order__end_time')
-
-            if start_time is not None and end_time is not None:
-                if start_time > end_time:
-                    start_time, end_time = end_time, start_time
-
-                if request.GET.get('driver') or request.GET.get('tourguide'):
-                    qs = MainModel.Staff.objects.exclude(
-                        Q(order__start_time__range=(start_time, end_time))
-                        | Q(order__end_time__range=(start_time, end_time)))
-
-                    return qs
-
-        if request.user.is_superuser:
-            return qs
-
-        return qs.filter(id=request.user.staff.id)
+    # other_list_filter = [
+    #     'order__start_time',
+    #     'order__end_time',
+    # ]
+    #
+    # def get_queryset(self, request):
+    #     qs = super().get_queryset(request)
+    #
+    #     if IS_POPUP_VAR not in request:
+    #         start_time = request.GET.get('order__start_time')
+    #         end_time = request.GET.get('order__end_time')
+    #
+    #         if start_time is not None and end_time is not None:
+    #             if start_time > end_time:
+    #                 start_time, end_time = end_time, start_time
+    #
+    #             if request.GET.get('driver') or request.GET.get('tourguide'):
+    #                 qs = MainModel.Staff.objects.exclude(
+    #                     Q(order__start_time__range=(start_time, end_time))
+    #                     | Q(order__end_time__range=(start_time, end_time)))
+    #
+    #                 return qs
+    #
+    #     if request.user.is_superuser:
+    #         return qs
+    #
+    #     return qs.filter(id=request.user.staff.id)
 
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
@@ -531,10 +533,10 @@ class OrderVehicleAdmin(PermissionAdmin):
         'vehicle',
         'client',
         'amount',
+        'pickup_pay',
         'duration',
         'start_time',
         'end_time',
-        'pickup_pay',
         'pickup_type',
         'status',
         'pay_status',
@@ -600,6 +602,7 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
                     'phone',
                     'client_type',
                     'company',
+                    'name',
                     'is_active',
                 )
             }
@@ -660,6 +663,7 @@ class ClientCompany(DjangoObjectActions, PermissionAdmin):
         'phone',
         'addr',
         'email',
+        'account',
         'admin'
     ]
 
@@ -670,6 +674,7 @@ class ClientCompany(DjangoObjectActions, PermissionAdmin):
         'phone',
         'addr',
         'email',
+        'account',
         'admin'
     ]
 
