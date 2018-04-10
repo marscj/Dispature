@@ -35,8 +35,7 @@ class Image(models.Model):
 class TLI(models.Model):
     license_no = models.CharField(
         max_length=64, unique=True, verbose_name='TourGuide No.')
-    language = models.CharField(
-        choices=Constants.LANGUAGE, max_length=7, default='chinese')
+    language = models.IntegerField(choices=Constants.LANGUAGE, default=1)
     date_of_expiry = models.DateField()
 
     staff = models.OneToOneField(
@@ -73,8 +72,7 @@ class PPI(models.Model):
         max_length=32, unique=True, verbose_name='Passport No.')
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64)
-    gender = models.CharField(choices=Constants.GENDER,
-                              max_length=6, default='male')
+    gender = models.IntegerField(choices=Constants.GENDER, default=0)
     country = CountryField(blank_label='(select country)')
     date_of_birth = models.DateField()
     date_of_issue = models.DateField()
@@ -121,11 +119,9 @@ class Staff(User):
     phone = PhoneNumberField()  # 电话
     introduction = models.TextField(max_length=256, blank=True)  # 自我介绍
     photo = models.ImageField(upload_to='photos', null=True, blank=True)  # 头像
-    status = models.CharField(max_length=16, default='disabled',
-                              blank=True, null=True, choices=Constants.STATUS)  # 状态
+    status = models.IntegerField(default=1,blank=True, null=True, choices=Constants.STATUS)  # 状态
     day_pay = models.FloatField(blank=True, default=400.0)  # 时薪
-    work_status = models.CharField(
-        max_length=5, default='start', choices=Constants.WORK_STATUS)
+    work_status = models.IntegerField(default=0, choices=Constants.WORK_STATUS)
     driver = models.BooleanField(
         default=False, verbose_name='Driver ?')  # 是否 司机
     tourguide = models.BooleanField(
@@ -143,8 +139,7 @@ class Staff(User):
 
 
 class VehicleModel(models.Model):
-    model = models.CharField(default='Car', max_length=6,
-                             choices=Constants.MODEL)  # 类型
+    model = models.IntegerField(default=0,choices=Constants.MODEL)  # 类型
     name = models.CharField(max_length=64)  # 名称
     num = models.IntegerField(
         default=5, verbose_name='number of passenger')  # 乘坐人数
@@ -172,8 +167,7 @@ class Vehicle(models.Model):
     reg_date = models.DateField()                                       # 注册日期
     ins_exp = models.DateField()                                        # 日期
     policy_no = models.CharField(max_length=32, unique=True)            # 保险号
-    status = models.CharField(
-        max_length=16, default='disabled', blank=True, null=True, choices=Constants.STATUS)
+    status = models.IntegerField(default=1, blank=True, null=True, choices=Constants.STATUS)
     model = models.ForeignKey(
         VehicleModel, on_delete=models.CASCADE, related_name='vehicle')
     company = models.ForeignKey(
@@ -194,12 +188,9 @@ class AbstractOrder(models.Model):
     amount = models.FloatField(default=0.0)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    status = models.CharField(
-        max_length=8, default='open', choices=Constants.ORDER_STATUS)
-    pay_status = models.CharField(
-        max_length=9, default='unpaid', choices=Constants.PAY_STATUS)
-    client_type = models.CharField(
-        max_length=8, default='company', choices=Constants.CLIENT_TYPE)
+    status = models.IntegerField(default=0, choices=Constants.ORDER_STATUS)
+    pay_status = models.IntegerField(default=0, choices=Constants.PAY_STATUS)
+    client_type = models.IntegerField(default=0, choices=Constants.CLIENT_TYPE)
     remake = models.TextField(blank=True, max_length=256)
     create_time = models.DateTimeField(auto_now_add=True)
 
@@ -215,13 +206,11 @@ class OrderStaffManager(models.Manager):
 
 
 class OrderStaff(AbstractOrder):
-    settle_status = models.CharField(
-        max_length=8, default='unsettle', choices=Constants.SETTLE_STATUS)
-    staff_confirm = models.CharField(
-        max_length=8, default='wait', choices=Constants.STAFF_CONFIRM)
+    settle_status = models.IntegerField(default=0, choices=Constants.SETTLE_STATUS)
+    staff_confirm = models.IntegerField(default=0, choices=Constants.STAFF_CONFIRM)
     duration = models.CharField(max_length=128)
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order', limit_choices_to={
-                              'status': 'enabled', 'work_status': 'start'})
+                              'status': 0, 'work_status': 0})
     client = models.ForeignKey(
         'Client', on_delete=models.CASCADE, related_name='order_staff')
 
@@ -237,12 +226,11 @@ class OrderVehicleManager(models.Manager):
 
 
 class OrderVehicle(AbstractOrder):
-    pickup_type = models.CharField(
-        max_length=5, default='self', choices=Constants.PICK_TYPE)
+    pickup_type = models.IntegerField(default=0, choices=Constants.PICK_TYPE)
     pickup_pay = models.FloatField(default=100.0)
     duration = models.CharField(max_length=128)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE,
-                                related_name='order', limit_choices_to={'status': 'enabled'})
+                                related_name='order', limit_choices_to={'status': 0})
     client = models.ForeignKey(
         'Client', on_delete=models.CASCADE, related_name='order_vehicle')
 
@@ -278,8 +266,7 @@ class Client(User):
     userId = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, unique=True)  # 昵称
     phone = PhoneNumberField(unique=True, verbose_name='Phone number')
-    client_type = models.CharField(
-        max_length=10, default='personal', choices=Constants.CLIENT_TYPE)
+    client_type = models.IntegerField(default=0, choices=Constants.CLIENT_TYPE)
     company = models.ForeignKey(
         ClientCompany, on_delete=models.CASCADE, related_name='Client', blank=True, null=True)
 

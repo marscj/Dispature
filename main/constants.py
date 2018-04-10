@@ -1,68 +1,64 @@
 
 STATUS = [
-    ('enabled', 'Enabled'),
-    ('disabled', 'Disabled'),
+    (0, 'Enabled'),
+    (1, 'Disabled'),
 ]
 
 GENDER = [
-    ('male', 'Male'),
-    ('female', 'Female'),
+    (0, 'Male'),
+    (1, 'Female'),
 ]
 
 LANGUAGE = [
-    ('english', 'English'),
-    ('chinese', 'Chinese'),
+    (0, 'English'),
+    (1, 'Chinese'),
 ]
 
 MODEL = [
-    ('car', 'Car'),
-    ('suv', 'SUV'),
-    ('mpv', 'MPV'),
-    ('van', 'VAN'),
-    ('bus', 'BUS'),
-    ('luxury', 'Luxury')
+    (0, 'Car'),
+    (1, 'SUV'),
+    (2, 'MPV'),
+    (3, 'VAN'),
+    (4, 'BUS'),
+    (5, 'Luxury')
 ]
 
 ORDER_STATUS = [
-    ('open', 'Open'),
-    ('cancel', 'Cancel'),
-    ('complete', 'Complete'),
+    (0, 'Open'),
+    (1, 'Cancel'),
+    (2, 'Complete'),
+    (3, 'Close'),
 ]
 
 SETTLE_STATUS = [
-    ('unsettle', 'Unsettle'),
-    ('settle', 'Settle'),
+    (0, 'Unsettle'),
+    (1, 'Settle'),
 ]
 
 PAY_STATUS = [
-    ('unpaid', 'Unpaid'),
-    ('paid', 'Paid'),
-    ('refunding', 'Refunding'),
-    ('refunded', 'Refunded'),
+    (0, 'Unpaid'),
+    (1, 'Paid'),
+    (2, 'Refunding'),
+    (3, 'Refunded'),
 ]
 
 WORK_STATUS = [
-    ('start', 'Start'),
-    ('stop', 'Stop'),
+    (0, 'Start'),
+    (1, 'Stop'),
 ]
 
 PICK_TYPE = [
-    ('self', 'self'),
-    ('visit', 'visit'),
+    (0, 'self'),
+    (1, 'visit'),
 ]
 
 CLIENT_TYPE = [
-    ('company', 'Company'),
-    ('personal', 'Personal'),
+    (0, 'Personal'),
+    (1, 'Company'),
 ]
 
 STAFF_CONFIRM = [
-    ('wait', 'Waiting'),
-    ('agree', 'Agree'),
-    ('disagree', 'Disagree'),
-]
-
-CLIENT_TYPE = [
-    ('personal', 'Personal'),
-    ('company', 'Company'),
+    (0, 'Waiting'),
+    (1, 'Agree'),
+    (2, 'Disagree'),
 ]

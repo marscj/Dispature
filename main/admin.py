@@ -423,6 +423,8 @@ class OrderStaffAdmin(PermissionAdmin):
 
     form = MainForm.OrderStaffForm
 
+    add_form = MainForm.OrderStaffCreateForm
+
     fields = [
         'orderId',
         'amount',
@@ -439,7 +441,6 @@ class OrderStaffAdmin(PermissionAdmin):
     ]
 
     add_fields = [
-        'orderId',
         'start_time',
         'end_time',
         'status',
@@ -500,6 +501,7 @@ class OrderStaffAdmin(PermissionAdmin):
 class OrderVehicleAdmin(PermissionAdmin):
 
     form = MainForm.OrderVehicleForm
+    add_form = MainForm.OrderVehicleCreateForm
 
     fields = [
         'orderId',
@@ -517,7 +519,6 @@ class OrderVehicleAdmin(PermissionAdmin):
     ]
 
     add_fields = [
-        'orderId',
         'pickup_type',
         'start_time',
         'end_time',
