@@ -41,7 +41,7 @@ class StaffViewSet(BaseModelViewSet):
     queryset = MainModle.Staff.objects.all()
     serializer_class = StaffSerializer
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = '__all__'
+    filter_fields = ['userId']
     search_fields = '__all__'
     ordering_fields = '__all__'
 
@@ -57,6 +57,12 @@ class StaffViewSet(BaseModelViewSet):
         staff = request.user.staff
         return Response('ok')
 
+    @list_route(methods=['get'], permission_classes=[IsAdminOrIsSelf])
+    def getSelf(self, request, pk=None):
+        user = request.user.staff
+        staff = StaffSerializer(user)
+        return Response(staff.data)
+
 
 class VehicleViewSet(BaseModelViewSet):
     queryset = MainModle.Vehicle.objects.all()
@@ -68,14 +74,13 @@ class VehicleViewSet(BaseModelViewSet):
     ordering_fields = '__all__'
 
 class OrderStaffViewSet(BaseModelViewSet):
-    queryset = MainModle.OrderStaff.objects.all()
+    queryset = MainModle.OrderStaff.objects.exclude(status=3)
     serializer_class = OrderStaffSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
     search_fields = '__all__'
     ordering_fields = '__all__'
-
 
 class StaffSigup(views.APIView):
 

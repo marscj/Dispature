@@ -1,6 +1,6 @@
 from rest_framework import serializers
 import main.models as MainModel
-
+from phonenumber_field.serializerfields import PhoneNumberField
 
 class DLISerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,6 +21,7 @@ class PPISerializer(serializers.ModelSerializer):
 
 
 class StaffSerializer(serializers.ModelSerializer):
+    phone = PhoneNumberField()
 
     class Meta:
         model = MainModel.Staff
@@ -50,8 +51,11 @@ class ClientSerializer(serializers.ModelSerializer):
 
 class OrderStaffSerializer(serializers.ModelSerializer):
 
-    staff = StaffSerializer()
-    client = ClientSerializer()
+    staff = StaffSerializer(required=False, allow_null=True)
+    client = ClientSerializer(required=False, allow_null=True)
+    start_time = serializers.DateTimeField(required=False, allow_null=True)
+    end_time = serializers.DateTimeField(required=False, allow_null=True)
+    orderId = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = MainModel.OrderStaff

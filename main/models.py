@@ -190,7 +190,6 @@ class AbstractOrder(models.Model):
     end_time = models.DateTimeField()
     status = models.IntegerField(default=0, choices=Constants.ORDER_STATUS)
     pay_status = models.IntegerField(default=0, choices=Constants.PAY_STATUS)
-    client_type = models.IntegerField(default=0, choices=Constants.CLIENT_TYPE)
     remake = models.TextField(blank=True, max_length=256)
     create_time = models.DateTimeField(auto_now_add=True)
 
@@ -206,9 +205,8 @@ class OrderStaffManager(models.Manager):
 
 
 class OrderStaff(AbstractOrder):
-    settle_status = models.IntegerField(default=0, choices=Constants.SETTLE_STATUS)
     staff_confirm = models.IntegerField(default=0, choices=Constants.STAFF_CONFIRM)
-    duration = models.CharField(max_length=128)
+    duration = models.CharField(max_length=128, default='')
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order', limit_choices_to={
                               'status': 0, 'work_status': 0})
     client = models.ForeignKey(

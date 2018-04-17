@@ -432,7 +432,6 @@ class OrderStaffAdmin(PermissionAdmin):
         'end_time',
         'duration',
         'status',
-        'settle_status',
         'pay_status',
         'staff_confirm',
         'staff',
@@ -444,7 +443,6 @@ class OrderStaffAdmin(PermissionAdmin):
         'start_time',
         'end_time',
         'status',
-        'settle_status',
         'pay_status',
         'staff_confirm',
         'staff',
@@ -461,7 +459,6 @@ class OrderStaffAdmin(PermissionAdmin):
         'start_time',
         'end_time',
         'status',
-        'settle_status',
         'pay_status',
         'staff_confirm',
         'remake',
@@ -480,7 +477,6 @@ class OrderStaffAdmin(PermissionAdmin):
 
     list_editable = [
         'status',
-        'settle_status',
         'pay_status',
         'staff_confirm',
     ]
