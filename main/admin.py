@@ -146,11 +146,11 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                 'fields': [
                     'photo',
                     'status',
-                    'work_status',
                     'day_pay',
                     'company',
                     'driver',
                     'tourguide',
+                    'accept',
                     'introduction'
                 ]
             }
@@ -188,7 +188,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
         'driver',
         'tourguide',
         'status',
-        'work_status',
+        'accept',
         'is_active'
     ]
 
@@ -197,18 +197,18 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
         'name',
         'phone',
         'driver',
-        'work_status',
         'tourguide',
     ]
 
     list_editable = [
         'status',
+        'accept',
         'is_active',
     ]
 
     list_filter = [
         'status',
-        'work_status',
+        'accept',
         'tourguide',
         'driver',
     ]
@@ -461,7 +461,6 @@ class OrderStaffAdmin(PermissionAdmin):
         'status',
         'pay_status',
         'staff_confirm',
-        'remake',
     ]
 
     list_display_links = [
@@ -471,7 +470,6 @@ class OrderStaffAdmin(PermissionAdmin):
         'amount',
         'start_time',
         'end_time',
-        'remake',
         'duration',
     ]
 

@@ -57,9 +57,13 @@ class StaffViewSet(BaseModelViewSet):
         staff = request.user.staff
         return Response('ok')
 
-    @list_route(methods=['get'], permission_classes=[IsAdminOrIsSelf])
+    @list_route(methods=['get'], permission_classes=[IsAuthenticated])
     def getSelf(self, request, pk=None):
-        user = request.user.staff
+        try:
+            user = request.user.staff
+        except Exception:
+            return Response(status=401)
+        
         staff = StaffSerializer(user)
         return Response(staff.data)
 
@@ -93,6 +97,26 @@ class StaffSigup(views.APIView):
             return Response('ok')
 
         return Response(staff.errors, status=400)
+
+from django.core.files.base import ContentFile
+
+class UpLoadFile(views.APIView):
+
+    def post(self, request):
+        
+        try:
+            staff = request.user.staff
+        except Exception:
+            return Response(status=401)
+
+        photo=request.FILES.get('photo','')
+
+        if photo:  
+            file_content = ContentFile(photo.read()) 
+            staff.photo.save(photo.name, file_content)
+            staff.save()
+
+            return Response(StaffSerializer(staff).data)
 
 
 # class StaffViewSet(viewsets.ViewSet, MixinPermissions):

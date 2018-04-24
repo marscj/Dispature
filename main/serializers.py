@@ -3,18 +3,21 @@ import main.models as MainModel
 from phonenumber_field.serializerfields import PhoneNumberField
 
 class DLISerializer(serializers.ModelSerializer):
+
     class Meta:
         model = MainModel.DLI
         fields = '__all__'
 
 
 class TLISerializer(serializers.ModelSerializer):
+
     class Meta:
         model = MainModel.TLI
         fields = '__all__'
 
 
 class PPISerializer(serializers.ModelSerializer):
+
     class Meta:
         model = MainModel.PPI
         fields = '__all__'
@@ -22,10 +25,14 @@ class PPISerializer(serializers.ModelSerializer):
 
 class StaffSerializer(serializers.ModelSerializer):
     phone = PhoneNumberField()
+    dli = DLISerializer(required=False, allow_null=True, many=False)
+    tli = TLISerializer(required=False, allow_null=True, many=False)
+    name = serializers.CharField(required=False, allow_null=True)
+    phone = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = MainModel.Staff
-        fields = ['userId', 'name', 'phone', 'photo', 'status',
+        fields = ['userId', 'name', 'phone', 'photo', 'status', 'accept', 'dli', 'tli',
                   'driver', 'tourguide']
 
 class VehicleSerializer(serializers.ModelSerializer):

@@ -39,7 +39,7 @@ class TLI(models.Model):
     date_of_expiry = models.DateField()
 
     staff = models.OneToOneField(
-        'Staff', on_delete=models.CASCADE, related_name='TLI')
+        'Staff', on_delete=models.CASCADE, related_name='tli')
 
     class Meta:
         verbose_name = 'TourGuide License Infomation'
@@ -57,7 +57,7 @@ class DLI(models.Model):
     date_of_expiry = models.DateField()
 
     staff = models.OneToOneField(
-        'Staff', on_delete=models.CASCADE, related_name='DLI')
+        'Staff', on_delete=models.CASCADE, related_name='dli')
 
     class Meta:
         verbose_name = 'Driver License Infomation'
@@ -79,7 +79,7 @@ class PPI(models.Model):
     date_of_expiry = models.DateField()
 
     staff = models.OneToOneField(
-        'Staff', on_delete=models.CASCADE, related_name='PPI')
+        'Staff', on_delete=models.CASCADE, related_name='ppi')
 
     class Meta:
         verbose_name = 'Passport Infomation'
@@ -121,7 +121,7 @@ class Staff(User):
     photo = models.ImageField(upload_to='photos', null=True, blank=True)  # 头像
     status = models.IntegerField(default=1,blank=True, null=True, choices=Constants.STATUS)  # 状态
     day_pay = models.FloatField(blank=True, default=400.0)  # 时薪
-    work_status = models.IntegerField(default=0, choices=Constants.WORK_STATUS)
+    accept = models.BooleanField(default=False)
     driver = models.BooleanField(
         default=False, verbose_name='Driver ?')  # 是否 司机
     tourguide = models.BooleanField(
@@ -208,7 +208,7 @@ class OrderStaff(AbstractOrder):
     staff_confirm = models.IntegerField(default=0, choices=Constants.STAFF_CONFIRM)
     duration = models.CharField(max_length=128, default='')
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order', limit_choices_to={
-                              'status': 0, 'work_status': 0})
+                              'status': 0, 'accept': True})
     client = models.ForeignKey(
         'Client', on_delete=models.CASCADE, related_name='order_staff')
 

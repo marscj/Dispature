@@ -42,11 +42,6 @@ PAY_STATUS = [
     (3, 'Refunded'),
 ]
 
-WORK_STATUS = [
-    (0, 'Start'),
-    (1, 'Stop'),
-]
-
 PICK_TYPE = [
     (0, 'self'),
     (1, 'visit'),
