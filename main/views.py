@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpResponse
+from django.core.files.base import ContentFile
 
 from rest_framework import viewsets, generics, views
 from rest_framework.response import Response
@@ -35,7 +36,6 @@ class Utf8JSONRenderer(JSONRenderer):
 class BaseModelViewSet(viewsets.ModelViewSet):
     renderer_classes = [Utf8JSONRenderer,]
 
-
 class StaffViewSet(BaseModelViewSet):
 
     queryset = MainModle.Staff.objects.all()
@@ -52,11 +52,6 @@ class StaffViewSet(BaseModelViewSet):
             permission_classes = [IsStaffSelf]
         return [permission() for permission in permission_classes]
 
-    @detail_route(methods=['post'], permission_classes=[IsAdminOrIsSelf])
-    def upload_photo(self, request, pk=None):
-        staff = request.user.staff
-        return Response('ok')
-
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
     def getSelf(self, request, pk=None):
         try:
@@ -71,11 +66,18 @@ class StaffViewSet(BaseModelViewSet):
 class VehicleViewSet(BaseModelViewSet):
     queryset = MainModle.Vehicle.objects.all()
     serializer_class = VehicleSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
     search_fields = '__all__'
     ordering_fields = '__all__'
+
+    def get_permissions(self):
+        if self.action == 'list':
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
 class OrderStaffViewSet(BaseModelViewSet):
     queryset = MainModle.OrderStaff.objects.exclude(status=3)
@@ -87,23 +89,17 @@ class OrderStaffViewSet(BaseModelViewSet):
     ordering_fields = '__all__'
 
 class StaffSigup(views.APIView):
-
     permission_classes = [AllowAny]
-
     def post(self, request):
         staff = StaffCreationForm(request.data)
         if staff.is_valid():
             staff.save()
             return Response('ok')
-
         return Response(staff.errors, status=400)
-
-from django.core.files.base import ContentFile
 
 class UpLoadFile(views.APIView):
 
     def post(self, request):
-        
         try:
             staff = request.user.staff
         except Exception:
