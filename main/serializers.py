@@ -22,11 +22,14 @@ class PPISerializer(serializers.ModelSerializer):
         model = MainModel.PPI
         fields = '__all__'
 
-class CompanySerializer(serializers.ModelSerializer):
+class StoreSerializer(serializers.ModelSerializer):
+
+    phone = PhoneNumberField()
+    tel = PhoneNumberField()
 
     class Meta:
-        model = MainModel.Company
-        fields = '__all__'
+        model = MainModel.Store
+        fields = ['phone', 'tel', 'name', 'email', 'addr']
 
 
 class StaffSerializer(serializers.ModelSerializer):
@@ -50,21 +53,21 @@ class VehicleModelSerializer(serializers.ModelSerializer):
 class VehicleSerializer(serializers.ModelSerializer):
 
     model = VehicleModelSerializer(required=False, allow_null=True)
-    company = CompanySerializer(required=False, allow_null=True)
+    store = StoreSerializer(required=False, allow_null=True)
 
     class Meta:
         model = MainModel.Vehicle
         fields = '__all__'
 
-class ClientCompanySerializer(serializers.ModelSerializer):
+class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = MainModel.ClientCompany
+        model = MainModel.Company
         fields = '__all__'                  
 
 class ClientSerializer(serializers.ModelSerializer):
 
-    company = ClientCompanySerializer()
+    company = CompanySerializer()
 
     class Meta:
         model = MainModel.Client

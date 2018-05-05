@@ -31,7 +31,7 @@ class StaffChangeForm(UserChangeForm):
 
 class StaffCreationForm(UserCreationForm):
     verifycode = forms.CharField(max_length=4, required=True,
-                                 widget=forms.TextInput, help_text='company verifycode')
+                                 widget=forms.TextInput, help_text='verifycode')
     phone = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
         label='Phone number',
@@ -51,9 +51,9 @@ class StaffCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         verifycode = self.cleaned_data['verifycode']
-        company = MainModel.Company.objects.get(verifycode=verifycode)
-        if company:
-            user.company = company
+        store = MainModel.Store.objects.get(verifycode=verifycode)
+        if store:
+            user.store = store
 
         return user
 
@@ -105,28 +105,28 @@ class ClientChangeForm(UserChangeForm):
         return user
 
 
-class CompanyForm(forms.ModelForm):
+class StoreForm(forms.ModelForm):
 
     tel = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
         label='Tel number',
-        required=False,
+        required=True,
         initial='+971'
     )
 
     phone = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
         label='Phone number',
-        required=False,
+        required=True,
         initial='+971'
     )
 
     class Meta:
-        model = MainModel.Company
+        model = MainModel.Store
         fields = '__all__'
 
 
-class ClientCompanyForm(forms.ModelForm):
+class CompanyForm(forms.ModelForm):
 
     tel = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),

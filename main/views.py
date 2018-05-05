@@ -13,7 +13,7 @@ from rest_framework.decorators import list_route, api_view, detail_route
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (IsStaffSelf, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
-from .serializers import (OrderStaffSerializer, StaffSerializer,VehicleSerializer, TLISerializer,DLISerializer, PPISerializer)
+from .serializers import (OrderStaffSerializer, StaffSerializer,VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer)
 import main.models as MainModle
 from .forms import StaffCreationForm
 
@@ -40,6 +40,7 @@ class StaffViewSet(BaseModelViewSet):
 
     queryset = MainModle.Staff.objects.all()
     serializer_class = StaffSerializer
+    pagination_class = PageNumberPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = ['userId']
     search_fields = '__all__'
@@ -67,6 +68,7 @@ class VehicleViewSet(BaseModelViewSet):
     queryset = MainModle.Vehicle.objects.all()
     serializer_class = VehicleSerializer
     # permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
     search_fields = '__all__'
@@ -83,10 +85,20 @@ class OrderStaffViewSet(BaseModelViewSet):
     queryset = MainModle.OrderStaff.objects.exclude(status=3)
     serializer_class = OrderStaffSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
     search_fields = '__all__'
     ordering_fields = '__all__'
+
+class StoreViewSet(BaseModelViewSet):
+    queryset = MainModle.Store.objects.all()
+    serializer_class = StoreSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    # filter_fields = '__all__'
+    # search_fields = '__all__'
+    # ordering_fields = '__all__'
 
 class StaffSigup(views.APIView):
     permission_classes = [AllowAny]

@@ -147,7 +147,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                     'photo',
                     'status',
                     'day_pay',
-                    'company',
+                    'store',
                     'driver',
                     'tourguide',
                     'accept',
@@ -278,7 +278,7 @@ class VehicleAdmin(PermissionAdmin):
                     'policy_no',
                     'status',
                     'model',
-                    'company'
+                    'store'
                 ]
             }
         ],
@@ -367,10 +367,10 @@ class VehicleModelAdmin(PermissionAdmin):
     ]
 
 
-@admin.register(MainModel.Company, site=site)
-class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
+@admin.register(MainModel.Store, site=site)
+class StoreAdmin(DjangoObjectActions, PermissionAdmin):
 
-    form = MainForm.CompanyForm
+    form = MainForm.StoreForm
 
     fields = [
         'name',
@@ -378,7 +378,6 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'email',
         'addr',
-        'parking',
         'verifycode'
     ]
 
@@ -388,7 +387,6 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'email',
         'addr',
-        'parking',
         'verifycode'
     ]
 
@@ -398,7 +396,6 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'email',
         'addr',
-        'parking',
         'verifycode'
     ]
 
@@ -642,10 +639,10 @@ class ClientInline(CompactInline):
     ]
 
 
-@admin.register(MainModel.ClientCompany, site=site)
-class ClientCompany(DjangoObjectActions, PermissionAdmin):
+@admin.register(MainModel.Company, site=site)
+class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
 
-    form = MainForm.ClientCompanyForm
+    form = MainForm.CompanyForm
 
     inlines = [
         ClientInline,

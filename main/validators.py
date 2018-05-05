@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 def verifycode_validate(code):
     import main.models as main
 
-    qs = main.Company.objects.filter(verifycode=code)
+    qs = main.Store.objects.filter(verifycode=code)
     print(qs)
 
     if not qs:

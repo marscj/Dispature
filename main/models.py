@@ -89,25 +89,24 @@ class PPI(models.Model):
         return self.first_name + ' ' + self.last_name
 
 
-class CompanyManager(models.Manager):
+class StoreManager(models.Manager):
     pass
 
 
-class Company(models.Model):
+class Store(models.Model):
     name = models.CharField(max_length=128, unique=True)
     tel = PhoneNumberField(unique=True)
     phone = PhoneNumberField(unique=True)
     email = models.EmailField(unique=True)
     addr = models.CharField(max_length=256)
-    parking = models.CharField(max_length=256, help_text='Parking Address')
     verifycode = models.CharField(
         max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist')
 
-    objects = CompanyManager
+    objects = StoreManager
 
     class Meta:
-        verbose_name = 'Company'
-        verbose_name_plural = 'Company'
+        verbose_name = 'Store'
+        verbose_name_plural = 'Store'
 
     def __str__(self):
         return self.name
@@ -127,8 +126,8 @@ class Staff(User):
     tourguide = models.BooleanField(
         default=False, verbose_name='TourGuide ?')  # 是否 导游
     update_time = models.DateTimeField(default=timezone.now, editable=False)
-    company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name='staff')
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, related_name='staff')
 
     class Meta:
         verbose_name = 'Staff'
@@ -170,8 +169,8 @@ class Vehicle(models.Model):
     status = models.IntegerField(default=1, blank=True, null=True, choices=Constants.STATUS)
     model = models.ForeignKey(
         VehicleModel, on_delete=models.CASCADE, related_name='vehicle')
-    company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name='vehicle')
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, related_name='vehicle')
 
     objects = VehicleManager
 
@@ -239,7 +238,7 @@ class OrderVehicle(AbstractOrder):
         verbose_name_plural = 'Vehicle Orders'
 
 
-class ClientCompany(models.Model):
+class Company(models.Model):
     name = models.CharField(max_length=128, unique=True)
     contacts = models.CharField(max_length=32)
     tel = PhoneNumberField(unique=True)
@@ -247,14 +246,14 @@ class ClientCompany(models.Model):
     addr = models.CharField(max_length=256)
     email = models.EmailField(unique=True)
     admin = models.ForeignKey('Client', on_delete=models.CASCADE,
-                              related_name='client_company', blank=True, null=True)
+                              related_name='admin', blank=True, null=True)
     verifycode = models.CharField(max_length=4, unique=True,
                                   default=Tools.get_code, help_text='For The Client Regist')
     account = models.FloatField(default=0.0)                         
 
     class Meta:
-        verbose_name = 'Client Company'
-        verbose_name_plural = 'Client Company'
+        verbose_name = 'Company'
+        verbose_name_plural = 'Company'
 
     def __str__(self):
         return self.name
@@ -266,7 +265,7 @@ class Client(User):
     phone = PhoneNumberField(unique=True, verbose_name='Phone number')
     client_type = models.IntegerField(default=0, choices=Constants.CLIENT_TYPE)
     company = models.ForeignKey(
-        ClientCompany, on_delete=models.CASCADE, related_name='Client', blank=True, null=True)
+        Company, on_delete=models.CASCADE, related_name='client', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Client'
