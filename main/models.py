@@ -94,11 +94,16 @@ class StoreManager(models.Manager):
 
 
 class Store(models.Model):
+
     name = models.CharField(max_length=128, unique=True)
     tel = PhoneNumberField(unique=True)
     phone = PhoneNumberField(unique=True)
     email = models.EmailField(unique=True)
     addr = models.CharField(max_length=256)
+    open_time = models.TimeField(default='09:00')
+    close_time = models.TimeField(default='18:00')
+    latitude = models.FloatField()
+    longitude = models.FloatField()
     verifycode = models.CharField(
         max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist')
 

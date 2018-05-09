@@ -29,7 +29,7 @@ class StoreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.Store
-        fields = ['phone', 'tel', 'name', 'email', 'addr']
+        fields = ['id', 'phone', 'tel', 'name', 'email', 'addr', 'latitude', 'longitude', 'open_time', 'close_time', 'verifycode']
 
 
 class StaffSerializer(serializers.ModelSerializer):

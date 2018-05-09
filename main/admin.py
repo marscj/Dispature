@@ -378,6 +378,10 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'email',
         'addr',
+        'open_time',
+        'close_time',
+        'latitude',
+        'longitude',
         'verifycode'
     ]
 
