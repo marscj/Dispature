@@ -141,6 +141,8 @@ class Staff(User):
     def __str__(self):
         return self.username
 
+class VehicleModelManager(models.Manager):
+    pass
 
 class VehicleModel(models.Model):
     model = models.IntegerField(default=0,choices=Constants.MODEL)  # 类型
@@ -150,6 +152,9 @@ class VehicleModel(models.Model):
     day_pay = models.FloatField(default=120.0)  # 价格
     pickup_pay = models.FloatField(default=100.0)
     photo = models.ImageField(upload_to='vehicle', blank=True)  # 图片
+
+    members = models.ManyToManyField(Store, through='Vehicle')
+    objects = VehicleModelManager
 
     class Meta:
         verbose_name = 'Vehicle Model'

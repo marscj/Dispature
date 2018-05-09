@@ -59,6 +59,14 @@ class VehicleSerializer(serializers.ModelSerializer):
         model = MainModel.Vehicle
         fields = '__all__'
 
+class VehicleModelSellSerializer(serializers.ModelSerializer):
+
+    vehicle = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = MainModel.VehicleModel
+        fields = '__all__'   
+
 class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:

@@ -13,7 +13,7 @@ from rest_framework.decorators import list_route, api_view, detail_route
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (IsStaffSelf, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
-from .serializers import (OrderStaffSerializer, StaffSerializer,VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer)
+from .serializers import (OrderStaffSerializer, StaffSerializer,VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
 import main.models as MainModle
 from .forms import StaffCreationForm
 
@@ -99,6 +99,16 @@ class StoreViewSet(BaseModelViewSet):
     # filter_fields = '__all__'
     # search_fields = '__all__'
     # ordering_fields = '__all__'
+
+class VehicleModelSellViewSet(BaseModelViewSet):
+    queryset = MainModle.VehicleModel.objects.all()
+    serializer_class = VehicleModelSellSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+
+    filter_fields = ['model', 'name', 'num', 'members__name', 'vehicle']
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
 class StaffSigup(views.APIView):
     permission_classes = [AllowAny]
