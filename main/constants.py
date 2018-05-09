@@ -1,17 +1,12 @@
 
 STATUS = [
-    (0, 'Enabled'),
-    (1, 'Disabled'),
+    (True, 'Enabled'),
+    (False, 'Disabled'),
 ]
 
 GENDER = [
     (0, 'Male'),
     (1, 'Female'),
-]
-
-LANGUAGE = [
-    (0, 'English'),
-    (1, 'Chinese'),
 ]
 
 MODEL = [

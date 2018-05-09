@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpResponse
 from django.core.files.base import ContentFile
+from django.db.models import Q
 
 from rest_framework import viewsets, generics, views
 from rest_framework.response import Response
@@ -13,7 +14,7 @@ from rest_framework.decorators import list_route, api_view, detail_route
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (IsStaffSelf, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
-from .serializers import (OrderStaffSerializer, StaffSerializer,VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer)
+from .serializers import (OrderStaffSerializer, StaffSerializer,VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
 import main.models as MainModle
 from .forms import StaffCreationForm
 
@@ -42,9 +43,21 @@ class StaffViewSet(BaseModelViewSet):
     serializer_class = StaffSerializer
     pagination_class = PageNumberPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = ['userId']
+    filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store']
     search_fields = '__all__'
     ordering_fields = '__all__'
+
+    def get_queryset(self):
+        queryset = MainModle.Staff.objects.all().filter(status=True)
+        start_time = self.request.query_params.get('start_time', None)
+        end_time = self.request.query_params.get('end_time', None)
+        
+        if start_time is not None and end_time is not None:
+            queryset = MainModle.Staff.objects.exclude(
+                Q(order__start_time__range=(start_time, end_time))
+                | Q(order__end_time__range=(start_time, end_time)))
+
+        return queryset
 
     def get_permissions(self):
         if self.action == 'list':
@@ -96,9 +109,28 @@ class StoreViewSet(BaseModelViewSet):
     serializer_class = StoreSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-    # filter_fields = '__all__'
-    # search_fields = '__all__'
-    # ordering_fields = '__all__'
+    filter_fields = ['id']
+    search_fields = '__all__'
+    ordering_fields = '__all__'
+
+class VehicleModelSellViewSet(BaseModelViewSet):
+    queryset = MainModle.VehicleModel.objects.all()
+    serializer_class = VehicleModelSellSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+
+    filter_fields = ['model', 'name', 'num', 'members', 'vehicle' , 'vehicle__status']
+    search_fields = '__all__'
+    ordering_fields = '__all__'
+
+    def get_queryset(self):
+        queryset = MainModle.VehicleModel.objects.all()
+        members = self.request.query_params.get('members', None)
+        if members is not None:
+            print (members)
+            queryset = queryset.filter(members__in=[members,])
+        return queryset
+
 
 class StaffSigup(views.APIView):
     permission_classes = [AllowAny]

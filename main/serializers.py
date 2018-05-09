@@ -1,6 +1,7 @@
 from rest_framework import serializers
 import main.models as MainModel
 from phonenumber_field.serializerfields import PhoneNumberField
+from django_countries.serializer_fields import CountryField
 
 class DLISerializer(serializers.ModelSerializer):
 
@@ -18,6 +19,8 @@ class TLISerializer(serializers.ModelSerializer):
 
 class PPISerializer(serializers.ModelSerializer):
 
+    country = CountryField(country_dict=True)
+
     class Meta:
         model = MainModel.PPI
         fields = '__all__'
@@ -27,21 +30,26 @@ class StoreSerializer(serializers.ModelSerializer):
     phone = PhoneNumberField()
     tel = PhoneNumberField()
 
+    # vehicle = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    # staff = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
     class Meta:
         model = MainModel.Store
-        fields = ['id', 'phone', 'tel', 'name', 'email', 'addr', 'latitude', 'longitude', 'open_time', 'close_time', 'verifycode']
+        fields = ['id', 'phone', 'tel', 'name', 'email', 'addr', 'latitude', 'longitude', 'driver_day_pay', 'tourguide_day_pay', 'dt_day_pay', 'open_time', 'close_time']
 
 
 class StaffSerializer(serializers.ModelSerializer):
     phone = PhoneNumberField()
     dli = DLISerializer(required=False, allow_null=True, many=False)
     tli = TLISerializer(required=False, allow_null=True, many=False)
+    ppi = PPISerializer(required=False, allow_null=True, many=False)
     name = serializers.CharField(required=False, allow_null=True)
     phone = serializers.CharField(required=False, allow_null=True)
+    # order = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = MainModel.Staff
-        fields = ['userId', 'name', 'phone', 'photo', 'status', 'accept', 'dli', 'tli',
+        fields = ['userId', 'name', 'phone', 'photo', 'status', 'accept', 'dli', 'tli', 'ppi', 'store',
                   'driver', 'tourguide']
 
 class VehicleModelSerializer(serializers.ModelSerializer):
@@ -58,6 +66,15 @@ class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainModel.Vehicle
         fields = '__all__'
+
+class VehicleModelSellSerializer(serializers.ModelSerializer):
+
+    vehicle = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = MainModel.VehicleModel
+        fields = '__all__'
+ 
 
 class CompanySerializer(serializers.ModelSerializer):
 

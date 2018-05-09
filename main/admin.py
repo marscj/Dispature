@@ -146,7 +146,6 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                 'fields': [
                     'photo',
                     'status',
-                    'day_pay',
                     'store',
                     'driver',
                     'tourguide',
@@ -212,6 +211,8 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
         'tourguide',
         'driver',
     ]
+
+    raw_id_fields = ['store']
 
     # other_list_filter = [
     #     'order__start_time',
@@ -380,6 +381,9 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
         'addr',
         'open_time',
         'close_time',
+        'driver_day_pay',
+        'tourguide_day_pay',
+        'dt_day_pay',
         'latitude',
         'longitude',
         'verifycode'

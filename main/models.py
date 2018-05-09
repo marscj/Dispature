@@ -35,7 +35,6 @@ class Image(models.Model):
 class TLI(models.Model):
     license_no = models.CharField(
         max_length=64, unique=True, verbose_name='TourGuide No.')
-    language = models.IntegerField(choices=Constants.LANGUAGE, default=1)
     date_of_expiry = models.DateField()
 
     staff = models.OneToOneField(
@@ -102,6 +101,9 @@ class Store(models.Model):
     addr = models.CharField(max_length=256)
     open_time = models.TimeField(default='09:00')
     close_time = models.TimeField(default='18:00')
+    driver_day_pay = models.FloatField(default=120.0, verbose_name='driver day pay')  # 日薪
+    tourguide_day_pay = models.FloatField(default=120.0, verbose_name='tourguide day pay')  # 日薪
+    dt_day_pay = models.FloatField(default=240.0, verbose_name='driver&Tourguide day pay')
     latitude = models.FloatField()
     longitude = models.FloatField()
     verifycode = models.CharField(
@@ -123,16 +125,14 @@ class Staff(User):
     phone = PhoneNumberField()  # 电话
     introduction = models.TextField(max_length=256, blank=True)  # 自我介绍
     photo = models.ImageField(upload_to='photos', null=True, blank=True)  # 头像
-    status = models.IntegerField(default=1,blank=True, null=True, choices=Constants.STATUS)  # 状态
-    day_pay = models.FloatField(blank=True, default=400.0)  # 时薪
+    status = models.BooleanField(default=False, choices=Constants.STATUS)  # 状态
     accept = models.BooleanField(default=False)
     driver = models.BooleanField(
         default=False, verbose_name='Driver ?')  # 是否 司机
     tourguide = models.BooleanField(
         default=False, verbose_name='TourGuide ?')  # 是否 导游
     update_time = models.DateTimeField(default=timezone.now, editable=False)
-    store = models.ForeignKey(
-        Store, on_delete=models.CASCADE, related_name='staff')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='staff')
 
     class Meta:
         verbose_name = 'Staff'
@@ -141,6 +141,8 @@ class Staff(User):
     def __str__(self):
         return self.username
 
+class VehicleModelManager(models.Manager):
+    pass
 
 class VehicleModel(models.Model):
     model = models.IntegerField(default=0,choices=Constants.MODEL)  # 类型
@@ -150,6 +152,9 @@ class VehicleModel(models.Model):
     day_pay = models.FloatField(default=120.0)  # 价格
     pickup_pay = models.FloatField(default=100.0)
     photo = models.ImageField(upload_to='vehicle', blank=True)  # 图片
+
+    members = models.ManyToManyField(Store, through='Vehicle')
+    objects = VehicleModelManager
 
     class Meta:
         verbose_name = 'Vehicle Model'
