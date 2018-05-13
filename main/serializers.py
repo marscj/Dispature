@@ -73,8 +73,12 @@ class VehicleModelSellSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.VehicleModel
+<<<<<<< HEAD
         fields = '__all__'
  
+=======
+        fields = '__all__'   
+>>>>>>> 7d4330aba53b67c87c7e75336cfd087141b0593b
 
 class CompanySerializer(serializers.ModelSerializer):
 

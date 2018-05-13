@@ -132,6 +132,16 @@ class VehicleModelSellViewSet(BaseModelViewSet):
         return queryset
 
 
+class VehicleModelSellViewSet(BaseModelViewSet):
+    queryset = MainModle.VehicleModel.objects.all()
+    serializer_class = VehicleModelSellSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+
+    filter_fields = ['model', 'name', 'num', 'members__name', 'vehicle']
+    search_fields = '__all__'
+    ordering_fields = '__all__'
+
 class StaffSigup(views.APIView):
     permission_classes = [AllowAny]
     def post(self, request):
