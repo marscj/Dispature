@@ -95,4 +95,4 @@ class VehicleModelSellSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.VehicleModel
-        fields = ['id', 'count', 'model', 'name', 'num', 'day_pay', 'pickup_pay', 'photo']
+        fields = ['id', 'count', 'model', 'name', 'num', 'day_pay', 'photo']
