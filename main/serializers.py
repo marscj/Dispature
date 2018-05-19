@@ -30,9 +30,6 @@ class StoreSerializer(serializers.ModelSerializer):
     phone = PhoneNumberField()
     tel = PhoneNumberField()
 
-    # vehicle = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    # staff = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
     class Meta:
         model = MainModel.Store
         fields = ['id', 'phone', 'tel', 'name', 'email', 'addr', 'latitude', 'longitude', 'driver_day_pay', 'tourguide_day_pay', 'dt_day_pay', 'open_time', 'close_time']
@@ -45,7 +42,6 @@ class StaffSerializer(serializers.ModelSerializer):
     ppi = PPISerializer(required=False, allow_null=True, many=False)
     name = serializers.CharField(required=False, allow_null=True)
     phone = serializers.CharField(required=False, allow_null=True)
-    # order = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = MainModel.Staff
@@ -61,19 +57,10 @@ class VehicleModelSerializer(serializers.ModelSerializer):
 class VehicleSerializer(serializers.ModelSerializer):
 
     model = VehicleModelSerializer(required=False, allow_null=True)
-    store = StoreSerializer(required=False, allow_null=True)
 
     class Meta:
         model = MainModel.Vehicle
         fields = '__all__'
-
-class VehicleModelSellSerializer(serializers.ModelSerializer):
-
-    vehicle = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
-    class Meta:
-        model = MainModel.VehicleModel
-        fields = '__all__' 
 
 class CompanySerializer(serializers.ModelSerializer):
 
@@ -100,3 +87,12 @@ class OrderStaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainModel.OrderStaff
         fields = '__all__'
+
+
+class VehicleModelSellSerializer(serializers.ModelSerializer):
+
+    count = serializers.IntegerField(default=0)
+
+    class Meta:
+        model = MainModel.VehicleModel
+        fields = ['id', 'count', 'model', 'name', 'num', 'day_pay', 'pickup_pay', 'photo']

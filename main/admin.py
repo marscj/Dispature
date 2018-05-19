@@ -262,9 +262,9 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
 @admin.register(MainModel.Vehicle, site=site)
 class VehicleAdmin(PermissionAdmin):
 
-    inlines = [
-        ImageInline,
-    ]
+    # inlines = [
+    #     ImageInline,
+    # ]
 
     fieldsets = [
         [
@@ -279,7 +279,6 @@ class VehicleAdmin(PermissionAdmin):
                     'policy_no',
                     'status',
                     'model',
-                    'store'
                 ]
             }
         ],
@@ -289,15 +288,13 @@ class VehicleAdmin(PermissionAdmin):
         '__str__',
         'model',
         'exp_date',
-        'policy_no',
-        'status',
+        'status', 
     ]
 
     list_display_links = [
         '__str__',
         'exp_date',
         'model',
-        'policy_no',
     ]
 
     list_editable = [
@@ -311,7 +308,8 @@ class VehicleAdmin(PermissionAdmin):
     ]
 
     list_filter = [
-        'status',
+        'model',
+        'status', 
     ]
 
     # other_list_filter = [
@@ -339,32 +337,38 @@ class VehicleAdmin(PermissionAdmin):
 
 @admin.register(MainModel.VehicleModel, site=site)
 class VehicleModelAdmin(PermissionAdmin):
+
+    inlines = [
+        ImageInline,
+    ]
+
+
     fields = [
         'model',
         'name',
         'num',
         'day_pay',
-        'pickup_pay',
+        'store',
         'photo'
     ]
 
     list_display = [
         '__str__',
+        'store',
         'model',
         'num',
         'day_pay',
-        'pickup_pay'
     ]
 
     list_display_links = [
         '__str__',
         'model',
         'num',
+        'store'
     ]
 
     list_editable = [
         'day_pay',
-        'pickup_pay'
     ]
 
 
@@ -505,7 +509,6 @@ class OrderVehicleAdmin(PermissionAdmin):
     fields = [
         'orderId',
         'amount',
-        'pickup_pay',
         'pickup_type',
         'start_time',
         'end_time',
@@ -533,7 +536,6 @@ class OrderVehicleAdmin(PermissionAdmin):
         'vehicle',
         'client',
         'amount',
-        'pickup_pay',
         'duration',
         'start_time',
         'end_time',
@@ -548,7 +550,6 @@ class OrderVehicleAdmin(PermissionAdmin):
         'amount',
         'start_time',
         'end_time',
-        'pickup_pay',
         'duration',
         'vehicle',
         'client',
@@ -567,7 +568,6 @@ class OrderVehicleAdmin(PermissionAdmin):
 
     readonly_fields = [
         'duration',
-        'pickup_pay',
     ]
 
     date_hierarchy = 'create_time'

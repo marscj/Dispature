@@ -1,7 +1,7 @@
 
 STATUS = [
-    (True, 'Enabled'),
-    (False, 'Disabled'),
+    (0, 'Disabled'),
+    (1, 'Enabled'),
 ]
 
 GENDER = [
@@ -13,9 +13,9 @@ MODEL = [
     (0, 'Car'),
     (1, 'SUV'),
     (2, 'MPV'),
-    (3, 'VAN'),
-    (4, 'BUS'),
-    (5, 'Luxury')
+    (3, 'SMALL BUS'),
+    (4, 'MEDIUM BUS'),
+    (5, 'BIG BUS'),
 ]
 
 ORDER_STATUS = [

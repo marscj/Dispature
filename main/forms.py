@@ -200,16 +200,16 @@ class OrderStaffCreateForm(forms.ModelForm):
         if qs:
             raise ValidationError('%s is busy' % qs[0].staff.name)
 
-    # def save(self, commit=True):
-    #     order = super().save(commit=False)
+    def save(self, commit=True):
+        order = super().save(commit=False)
     #     days, hours, minutes, amount = self.get_amount(
     #         self.cleaned_data['end_time'] - self.cleaned_data['start_time'], order.staff.day_pay)
 
     #     order.duration = '%02d:%02d:%02d' % (days, hours, minutes)
     #     order.amount = amount
-    #     order.orderId = self.initOrderId()
+        order.orderId = self.initOrderId()
 
-    #     return order
+        return order
 
 class OrderStaffForm(forms.ModelForm):
     
@@ -288,8 +288,8 @@ class OrderVehicleCreateForm(forms.ModelForm):
             raise ValidationError('%s is busy' %
                                   qs[0].vehicle.traffic_plate_no)
 
-    # def save(self, commit=True):
-    #     order = super().save(commit=False)
+    def save(self, commit=True):
+        order = super().save(commit=False)
 
     #     days, hours, minutes, amount = self.get_amount(
     #         self.cleaned_data['end_time'] - self.cleaned_data['start_time'], order.vehicle.model.day_pay)
@@ -303,9 +303,9 @@ class OrderVehicleCreateForm(forms.ModelForm):
     #         order.pickup_pay = order.vehicle.model.pickup_pay
     #         order.amount = amount + order.vehicle.model.pickup_pay
 
-    #     order.orderId = self.initOrderId()
+        order.orderId = self.initOrderId()
 
-    #     return order
+        return order
 
 class OrderVehicleForm(forms.ModelForm):
 

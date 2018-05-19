@@ -6,6 +6,7 @@ from django.core.files.base import ContentFile
 from django.db.models import Q
 
 from rest_framework import viewsets, generics, views
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_extensions.mixins import DetailSerializerMixin
@@ -54,8 +55,9 @@ class StaffViewSet(BaseModelViewSet):
         
         if start_time is not None and end_time is not None:
             queryset = MainModle.Staff.objects.exclude(
-                Q(order__start_time__range=(start_time, end_time))
-                | Q(order__end_time__range=(start_time, end_time)))
+                Q(order__status=0)
+                &(Q(order__start_time__range=(start_time, end_time))
+                | Q(order__end_time__range=(start_time, end_time))))
 
         return queryset
 
@@ -80,7 +82,7 @@ class StaffViewSet(BaseModelViewSet):
 class VehicleViewSet(BaseModelViewSet):
     queryset = MainModle.Vehicle.objects.all()
     serializer_class = VehicleSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     pagination_class = PageNumberPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
@@ -113,24 +115,54 @@ class StoreViewSet(BaseModelViewSet):
     search_fields = '__all__'
     ordering_fields = '__all__'
 
-class VehicleModelSellViewSet(BaseModelViewSet):
-    queryset = MainModle.VehicleModel.objects.all()
-    serializer_class = VehicleModelSellSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
+# class VehicleModelSellViewSet(generics.ListCreateAPIView, BaseModelViewSet):
+#     queryset = MainModle.VehicleModel.objects.all()
+#     serializer_class = VehicleModelSellSerializer
+#     permission_classes = [IsAuthenticated]
+#     filter_backends = (OrderingFilter, DjangoFilterBackend)
 
-    filter_fields = ['model', 'name', 'num', 'members', 'vehicle' , 'vehicle__status']
-    search_fields = '__all__'
-    ordering_fields = '__all__'
+#     filter_fields = ['model', 'name', 'num', 'members', 'vehicle' , 'vehicle__status']
+#     search_fields = '__all__'
+#     ordering_fields = '__all__'
 
-    def get_queryset(self):
-        queryset = MainModle.VehicleModel.objects.all()
-        members = self.request.query_params.get('members', None)
-        if members is not None:
-            print (members)
-            queryset = queryset.filter(members__in=[members,])
-        return queryset
+#     def get_queryset(self):
+#         queryset = MainModle.Vehicle.objects.filter(status=True)
+#         start_time = self.request.query_params.get('start_time', None)
+#         end_time = self.request.query_params.get('end_time', None)
+        
+#         if start_time is not None and end_time is not None:
+#             queryset = MainModle.Vehicle.objects.exclude(
+#                 Q(order__start_time__range=(start_time, end_time))
+#                 | Q(order__end_time__range=(start_time, end_time)))
+        
+#         return queryset
 
+#     def list(self, request):
+#         queryset = self.get_queryset()
+#         serializer = VehicleModelSellSerializer(queryset, many=True)
+#         return Response(serializer.data)
+
+class VehicleModelSellViewSet(APIView):
+    # queryset = MainModle.VehicleModel.objects.all()
+    # serializer_class = VehicleModelSellSerializer
+    # permission_classes = [IsAuthenticated]
+    # filter_backends = (OrderingFilter, DjangoFilterBackend)
+    
+    def get(self, request, format=None):
+        start_time = request.query_params.get('start_time', None)
+        end_time = request.query_params.get('end_time', None)
+        store = request.query_params.get('store', None)
+
+        queryset = MainModle.VehicleModel.objects.filter(store=store)
+        
+        for item in queryset:
+            if start_time is not None and end_time is not None and store is not None:
+                item.count = MainModle.Vehicle.objects.filter(model=item).exclude(Q(order__status=0)
+                     & (Q(order__start_time__range=(start_time, end_time))
+                    | Q(order__end_time__range=(start_time, end_time)))).count
+
+        serializer = VehicleModelSellSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class StaffSigup(views.APIView):
     permission_classes = [AllowAny]

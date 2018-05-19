@@ -23,8 +23,7 @@ import main.constants as Constants
 
 class Image(models.Model):
     image = models.ImageField(upload_to="images")
-    content_type = models.ForeignKey(
-        ContentType, on_delete=models.CASCADE, related_name='images')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='images')
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
@@ -33,12 +32,10 @@ class Image(models.Model):
 
 
 class TLI(models.Model):
-    license_no = models.CharField(
-        max_length=64, unique=True, verbose_name='TourGuide No.')
+    license_no = models.CharField(max_length=64, unique=True, verbose_name='TourGuide No.')
     date_of_expiry = models.DateField()
 
-    staff = models.OneToOneField(
-        'Staff', on_delete=models.CASCADE, related_name='tli')
+    staff = models.OneToOneField('Staff', on_delete=models.CASCADE, related_name='tli')
 
     class Meta:
         verbose_name = 'TourGuide License Infomation'
@@ -49,14 +46,12 @@ class TLI(models.Model):
 
 
 class DLI(models.Model):
-    driving_license_no = models.CharField(
-        max_length=32, unique=True, verbose_name='Driving License No.',)
+    driving_license_no = models.CharField(max_length=32, unique=True, verbose_name='Driving License No.',)
     driver_code = models.CharField(max_length=16)
     date_of_issue = models.DateField()
     date_of_expiry = models.DateField()
 
-    staff = models.OneToOneField(
-        'Staff', on_delete=models.CASCADE, related_name='dli')
+    staff = models.OneToOneField('Staff', on_delete=models.CASCADE, related_name='dli')
 
     class Meta:
         verbose_name = 'Driver License Infomation'
@@ -67,8 +62,7 @@ class DLI(models.Model):
 
 
 class PPI(models.Model):
-    passport_no = models.CharField(
-        max_length=32, unique=True, verbose_name='Passport No.')
+    passport_no = models.CharField(max_length=32, unique=True, verbose_name='Passport No.')
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64)
     gender = models.IntegerField(choices=Constants.GENDER, default=0)
@@ -77,8 +71,7 @@ class PPI(models.Model):
     date_of_issue = models.DateField()
     date_of_expiry = models.DateField()
 
-    staff = models.OneToOneField(
-        'Staff', on_delete=models.CASCADE, related_name='ppi')
+    staff = models.OneToOneField('Staff', on_delete=models.CASCADE, related_name='ppi')
 
     class Meta:
         verbose_name = 'Passport Infomation'
@@ -106,8 +99,7 @@ class Store(models.Model):
     dt_day_pay = models.FloatField(default=240.0, verbose_name='driver&Tourguide day pay')
     latitude = models.FloatField()
     longitude = models.FloatField()
-    verifycode = models.CharField(
-        max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist')
+    verifycode = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist')
 
     objects = StoreManager
 
@@ -125,12 +117,10 @@ class Staff(User):
     phone = PhoneNumberField()  # 电话
     introduction = models.TextField(max_length=256, blank=True)  # 自我介绍
     photo = models.ImageField(upload_to='photos', null=True, blank=True)  # 头像
-    status = models.BooleanField(default=False, choices=Constants.STATUS)  # 状态
+    status = models.BooleanField(default=0, choices=Constants.STATUS)  # 状态
     accept = models.BooleanField(default=False)
-    driver = models.BooleanField(
-        default=False, verbose_name='Driver ?')  # 是否 司机
-    tourguide = models.BooleanField(
-        default=False, verbose_name='TourGuide ?')  # 是否 导游
+    driver = models.BooleanField(default=False, verbose_name='Driver ?')  # 是否 司机
+    tourguide = models.BooleanField(default=False, verbose_name='TourGuide ?')  # 是否 导游
     update_time = models.DateTimeField(default=timezone.now, editable=False)
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='staff')
 
@@ -147,13 +137,11 @@ class VehicleModelManager(models.Manager):
 class VehicleModel(models.Model):
     model = models.IntegerField(default=0,choices=Constants.MODEL)  # 类型
     name = models.CharField(max_length=64)  # 名称
-    num = models.IntegerField(
-        default=5, verbose_name='number of passenger')  # 乘坐人数
+    num = models.IntegerField(default=5, verbose_name='passengers')  # 乘坐人数
     day_pay = models.FloatField(default=120.0)  # 价格
-    pickup_pay = models.FloatField(default=100.0)
     photo = models.ImageField(upload_to='vehicle', blank=True)  # 图片
-
-    members = models.ManyToManyField(Store, through='Vehicle')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='model')
+    
     objects = VehicleModelManager
 
     class Meta:
@@ -176,11 +164,8 @@ class Vehicle(models.Model):
     reg_date = models.DateField()                                       # 注册日期
     ins_exp = models.DateField()                                        # 日期
     policy_no = models.CharField(max_length=32, unique=True)            # 保险号
-    status = models.IntegerField(default=1, blank=True, null=True, choices=Constants.STATUS)
-    model = models.ForeignKey(
-        VehicleModel, on_delete=models.CASCADE, related_name='vehicle')
-    store = models.ForeignKey(
-        Store, on_delete=models.CASCADE, related_name='vehicle')
+    status = models.IntegerField(default=0, blank=True, null=True, choices=Constants.STATUS)
+    model = models.ForeignKey(VehicleModel, on_delete=models.CASCADE, related_name='vehicle')
 
     objects = VehicleManager
 
@@ -197,6 +182,7 @@ class AbstractOrder(models.Model):
     amount = models.FloatField(default=0.0)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    duration = models.CharField(max_length=128, default='')
     status = models.IntegerField(default=0, choices=Constants.ORDER_STATUS)
     pay_status = models.IntegerField(default=0, choices=Constants.PAY_STATUS)
     remake = models.TextField(blank=True, max_length=256)
@@ -215,17 +201,14 @@ class OrderStaffManager(models.Manager):
 
 class OrderStaff(AbstractOrder):
     staff_confirm = models.IntegerField(default=0, choices=Constants.STAFF_CONFIRM)
-    duration = models.CharField(max_length=128, default='')
-    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order', limit_choices_to={
-                              'status': 0, 'accept': True})
-    client = models.ForeignKey(
-        'Client', on_delete=models.CASCADE, related_name='order_staff')
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order', limit_choices_to={'status': 1, 'accept': True})
+    client = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='order_staff')
 
     objects = OrderStaffManager
 
     class Meta:
-        verbose_name = 'Staff Orders'
-        verbose_name_plural = 'Staff Orders'
+        verbose_name = 'Order Staff'
+        verbose_name_plural = 'Order Staff'
 
 
 class OrderVehicleManager(models.Manager):
@@ -234,18 +217,14 @@ class OrderVehicleManager(models.Manager):
 
 class OrderVehicle(AbstractOrder):
     pickup_type = models.IntegerField(default=0, choices=Constants.PICK_TYPE)
-    pickup_pay = models.FloatField(default=100.0)
-    duration = models.CharField(max_length=128)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE,
-                                related_name='order', limit_choices_to={'status': 0})
-    client = models.ForeignKey(
-        'Client', on_delete=models.CASCADE, related_name='order_vehicle')
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='order', limit_choices_to={'status': 1})
+    client = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='order_vehicle')
 
     objects = OrderVehicleManager
 
     class Meta:
-        verbose_name = 'Vehicle Orders'
-        verbose_name_plural = 'Vehicle Orders'
+        verbose_name = 'Order Vehicle'
+        verbose_name_plural = 'Order Vehicle'
 
 
 class Company(models.Model):
@@ -255,10 +234,8 @@ class Company(models.Model):
     phone = PhoneNumberField(unique=True)
     addr = models.CharField(max_length=256)
     email = models.EmailField(unique=True)
-    admin = models.ForeignKey('Client', on_delete=models.CASCADE,
-                              related_name='admin', blank=True, null=True)
-    verifycode = models.CharField(max_length=4, unique=True,
-                                  default=Tools.get_code, help_text='For The Client Regist')
+    admin = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='admin', blank=True, null=True)
+    verifycode = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Client Regist')
     account = models.FloatField(default=0.0)                         
 
     class Meta:
@@ -274,8 +251,7 @@ class Client(User):
     name = models.CharField(max_length=64, unique=True)  # 昵称
     phone = PhoneNumberField(unique=True, verbose_name='Phone number')
     client_type = models.IntegerField(default=0, choices=Constants.CLIENT_TYPE)
-    company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name='client', blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='client', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Client'
