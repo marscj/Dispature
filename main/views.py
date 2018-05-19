@@ -121,13 +121,18 @@ class VehicleModelSellViewSet(BaseModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = (OrderingFilter, DjangoFilterBackend)
 
+<<<<<<< HEAD
     filter_fields = ['model', 'name', 'seats']
+=======
+    filter_fields = ['model', 'name', 'num']
+>>>>>>> 67f7dde8560dd0fd57eade4ab9cb9cad3d833ea4
     search_fields = '__all__'
     ordering_fields = '__all__'
 
     def get_queryset(self):
         queryset = MainModle.VehicleModel.objects.all()
         store = self.request.query_params.get('store', None)
+<<<<<<< HEAD
         model = self.request.query_params.get('model', None)
 
         if store is not None:
@@ -135,6 +140,11 @@ class VehicleModelSellViewSet(BaseModelViewSet):
         
         if model is not None:
             queryset = queryset.filter(model=model)
+=======
+        
+        if store is not None:
+            queryset = queryset.filter(store=store)
+>>>>>>> 67f7dde8560dd0fd57eade4ab9cb9cad3d833ea4
 
         start_time = self.request.query_params.get('start_time', None)
         end_time = self.request.query_params.get('end_time', None)

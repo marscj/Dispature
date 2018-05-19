@@ -94,4 +94,8 @@ class VehicleModelSellSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.VehicleModel
+<<<<<<< HEAD
         fields = ['id', 'count', 'model', 'name', 'seats', 'day_pay', 'photo', 'store_id', 'automatic']
+=======
+        fields = ['id', 'count', 'model', 'name', 'num', 'day_pay', 'photo']
+>>>>>>> 67f7dde8560dd0fd57eade4ab9cb9cad3d833ea4
