@@ -297,10 +297,8 @@ class OrderVehicleCreateForm(forms.ModelForm):
     #     order.duration = '%02d:%02d:%02d' % (days, hours, minutes)
 
     #     if order.pickup_type == 0:
-    #         order.pickup_pay = 0.0
     #         order.amount = amount
     #     else:
-    #         order.pickup_pay = order.vehicle.model.pickup_pay
     #         order.amount = amount + order.vehicle.model.pickup_pay
 
         order.orderId = self.initOrderId()
@@ -343,10 +341,8 @@ class OrderVehicleForm(forms.ModelForm):
     #     order.duration = '%02d:%02d:%02d' % (days, hours, minutes)
 
     #     if order.pickup_type == 0:
-    #         order.pickup_pay = 0.0
     #         order.amount = amount
     #     else:
-    #         order.pickup_pay = order.vehicle.model.pickup_pay
     #         order.amount = amount + order.vehicle.model.pickup_pay
 
     #     return order

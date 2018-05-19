@@ -88,11 +88,10 @@ class OrderStaffSerializer(serializers.ModelSerializer):
         model = MainModel.OrderStaff
         fields = '__all__'
 
-
 class VehicleModelSellSerializer(serializers.ModelSerializer):
 
     count = serializers.IntegerField(default=0)
 
     class Meta:
         model = MainModel.VehicleModel
-        fields = ['id', 'count', 'model', 'name', 'num', 'day_pay', 'pickup_pay', 'photo']
+        fields = ['id', 'count', 'model', 'name', 'seats', 'day_pay', 'photo', 'store_id', 'automatic']

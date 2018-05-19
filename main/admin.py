@@ -346,7 +346,8 @@ class VehicleModelAdmin(PermissionAdmin):
     fields = [
         'model',
         'name',
-        'num',
+        'seats',
+        'automatic',
         'day_pay',
         'store',
         'photo'
@@ -356,14 +357,16 @@ class VehicleModelAdmin(PermissionAdmin):
         '__str__',
         'store',
         'model',
-        'num',
+        'seats',
+        'automatic',
         'day_pay',
     ]
 
     list_display_links = [
         '__str__',
         'model',
-        'num',
+        'seats',
+        'automatic',
         'store'
     ]
 

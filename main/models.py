@@ -137,8 +137,9 @@ class VehicleModelManager(models.Manager):
 class VehicleModel(models.Model):
     model = models.IntegerField(default=0,choices=Constants.MODEL)  # 类型
     name = models.CharField(max_length=64)  # 名称
-    num = models.IntegerField(default=5, verbose_name='passengers')  # 乘坐人数
-    day_pay = models.FloatField(default=120.0)  # 价格
+    automatic = models.BooleanField(default=True)
+    seats = models.IntegerField(default=5, verbose_name='passengers')  # 乘坐人数
+    day_pay = models.IntegerField(default=120)  # 价格
     photo = models.ImageField(upload_to='vehicle', blank=True)  # 图片
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='model')
     
