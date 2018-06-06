@@ -39,22 +39,21 @@ class BaseModelViewSet(viewsets.ModelViewSet):
     renderer_classes = [Utf8JSONRenderer,]
 
 class StaffViewSet(BaseModelViewSet):
-
     queryset = MainModle.Staff.objects.all()
     serializer_class = StaffSerializer
     pagination_class = PageNumberPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store']
+    filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store', 'model']
     search_fields = '__all__'
-    ordering_fields = '__all__'
+    ordering_fields = '__all__' 
 
     def get_queryset(self):
-        queryset = MainModle.Staff.objects.all().filter(status=True)
+        queryset = MainModle.Staff.objects.all().filter(status=1, accept=True, model=None)
         start_time = self.request.query_params.get('start_time', None)
         end_time = self.request.query_params.get('end_time', None)
         
         if start_time is not None and end_time is not None:
-            queryset = MainModle.Staff.objects.exclude(
+            queryset = queryset.exclude(
                 Q(order__status=0)
                 &(Q(order__start_time__range=(start_time, end_time))
                 | Q(order__end_time__range=(start_time, end_time))))
@@ -77,7 +76,6 @@ class StaffViewSet(BaseModelViewSet):
         
         staff = StaffSerializer(user)
         return Response(staff.data)
-
 
 class VehicleViewSet(BaseModelViewSet):
     queryset = MainModle.Vehicle.objects.all()
@@ -150,6 +148,29 @@ class VehicleModelSellViewSet(BaseModelViewSet):
         queryset = self.get_queryset()
         serializer = VehicleModelSellSerializer(queryset, many=True)
         return Response(serializer.data)
+
+class StaffModelViewSet(BaseModelViewSet):
+    queryset = MainModle.Staff.objects.all()
+    serializer_class = StaffSerializer
+    pagination_class = PageNumberPagination
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store', 'model__model']
+    search_fields = '__all__'
+    ordering_fields = '__all__' 
+
+    def get_queryset(self):
+        queryset = MainModle.Staff.objects.all().filter(status=1, accept=True).exclude(model=None)
+        start_time = self.request.query_params.get('start_time', None)
+        end_time = self.request.query_params.get('end_time', None)
+        
+        if start_time is not None and end_time is not None:
+            queryset = queryset.exclude(
+                Q(order__status=0)
+                &(Q(order__start_time__range=(start_time, end_time))
+                | Q(order__end_time__range=(start_time, end_time))))
+
+        return queryset
+
 
 class StaffSigup(views.APIView):
     permission_classes = [AllowAny]

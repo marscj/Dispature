@@ -1,4 +1,3 @@
-
 STATUS = [
     (0, 'Disabled'),
     (1, 'Enabled'),
@@ -25,11 +24,6 @@ ORDER_STATUS = [
     (3, 'Close'),
 ]
 
-SETTLE_STATUS = [
-    (0, 'Unsettle'),
-    (1, 'Settle'),
-]
-
 PAY_STATUS = [
     (0, 'Unpaid'),
     (1, 'Paid'),
@@ -39,12 +33,7 @@ PAY_STATUS = [
 
 PICK_TYPE = [
     (0, 'self'),
-    (1, 'visit'),
-]
-
-CLIENT_TYPE = [
-    (0, 'Personal'),
-    (1, 'Company'),
+    (1, 'delivery'),
 ]
 
 STAFF_CONFIRM = [

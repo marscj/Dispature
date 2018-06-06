@@ -74,10 +74,6 @@ class ClientCreationForm(UserCreationForm):
         user = super().save(commit=True)
 
         user.name = '用户%08d' % user.userId
-        if user.company:
-            user.client_type = 1
-        else:
-            user.client_type = 0
 
         return user
 
@@ -96,11 +92,6 @@ class ClientChangeForm(UserChangeForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-
-        if user.company:
-            user.client_type = 1
-        else:
-            user.client_type = 0
 
         return user
 

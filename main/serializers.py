@@ -35,19 +35,6 @@ class StoreSerializer(serializers.ModelSerializer):
         fields = ['id', 'phone', 'tel', 'name', 'email', 'addr', 'latitude', 'longitude', 'driver_day_pay', 'tourguide_day_pay', 'dt_day_pay', 'open_time', 'close_time']
 
 
-class StaffSerializer(serializers.ModelSerializer):
-    phone = PhoneNumberField()
-    dli = DLISerializer(required=False, allow_null=True, many=False)
-    tli = TLISerializer(required=False, allow_null=True, many=False)
-    ppi = PPISerializer(required=False, allow_null=True, many=False)
-    name = serializers.CharField(required=False, allow_null=True)
-    phone = serializers.CharField(required=False, allow_null=True)
-
-    class Meta:
-        model = MainModel.Staff
-        fields = ['userId', 'name', 'phone', 'photo', 'status', 'accept', 'dli', 'tli', 'ppi', 'store',
-                  'driver', 'tourguide']
-
 class VehicleModelSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -62,6 +49,22 @@ class VehicleSerializer(serializers.ModelSerializer):
         model = MainModel.Vehicle
         fields = '__all__'
 
+
+class StaffSerializer(serializers.ModelSerializer):
+    phone = PhoneNumberField()
+    dli = DLISerializer(required=False, allow_null=True, many=False)
+    tli = TLISerializer(required=False, allow_null=True, many=False)
+    ppi = PPISerializer(required=False, allow_null=True, many=False)
+    name = serializers.CharField(required=False, allow_null=True)
+    phone = serializers.CharField(required=False, allow_null=True)
+    model = VehicleModelSerializer()
+
+    class Meta:
+        model = MainModel.Staff
+        fields = ['userId', 'name', 'phone', 'photo', 'status', 'accept', 'dli', 'tli', 'ppi', 'store', 'model',
+                  'driver', 'tourguide']
+
+
 class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -74,7 +77,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.Client
-        fields = ['userId', 'name', 'phone', 'client_type', 'company']
+        fields = ['userId', 'name', 'phone', 'company']
 
 class OrderStaffSerializer(serializers.ModelSerializer):
 
@@ -94,4 +97,4 @@ class VehicleModelSellSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.VehicleModel
-        fields = ['id', 'count', 'model', 'name', 'seats', 'day_pay', 'photo', 'store_id', 'automatic']
+        fields = ['id', 'count', 'model', 'name', 'seats', 'day_pay', 'photo', 'store', 'automatic']

@@ -86,7 +86,6 @@ class StoreManager(models.Manager):
 
 
 class Store(models.Model):
-
     name = models.CharField(max_length=128, unique=True)
     tel = PhoneNumberField(unique=True)
     phone = PhoneNumberField(unique=True)
@@ -115,14 +114,14 @@ class Staff(User):
     userId = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, unique=True, help_text='name')  # 姓名
     phone = PhoneNumberField()  # 电话
-    introduction = models.TextField(max_length=256, blank=True)  # 自我介绍
     photo = models.ImageField(upload_to='photos', null=True, blank=True)  # 头像
-    status = models.BooleanField(default=0, choices=Constants.STATUS)  # 状态
+    status = models.IntegerField(default=0, choices=Constants.STATUS) # 状态
     accept = models.BooleanField(default=False)
     driver = models.BooleanField(default=False, verbose_name='Driver ?')  # 是否 司机
     tourguide = models.BooleanField(default=False, verbose_name='TourGuide ?')  # 是否 导游
     update_time = models.DateTimeField(default=timezone.now, editable=False)
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='staff')
+    model = models.ForeignKey('VehicleModel', blank=True, null=True, on_delete=models.CASCADE, related_name='staff')
 
     class Meta:
         verbose_name = 'Staff'
@@ -165,7 +164,7 @@ class Vehicle(models.Model):
     reg_date = models.DateField()                                       # 注册日期
     ins_exp = models.DateField()                                        # 日期
     policy_no = models.CharField(max_length=32, unique=True)            # 保险号
-    status = models.IntegerField(default=0, blank=True, null=True, choices=Constants.STATUS)
+    status = models.IntegerField(default=0, choices=Constants.STATUS)
     model = models.ForeignKey(VehicleModel, on_delete=models.CASCADE, related_name='vehicle')
 
     objects = VehicleManager
@@ -235,9 +234,10 @@ class Company(models.Model):
     phone = PhoneNumberField(unique=True)
     addr = models.CharField(max_length=256)
     email = models.EmailField(unique=True)
-    admin = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='admin', blank=True, null=True)
     verifycode = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Client Regist')
-    account = models.FloatField(default=0.0)                         
+    account = models.FloatField(default=0.0)
+    status = models.IntegerField(default=0, choices=Constants.STATUS)
+    admin = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='admin', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Company'
@@ -251,7 +251,6 @@ class Client(User):
     userId = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, unique=True)  # 昵称
     phone = PhoneNumberField(unique=True, verbose_name='Phone number')
-    client_type = models.IntegerField(default=0, choices=Constants.CLIENT_TYPE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='client', blank=True, null=True)
 
     class Meta:

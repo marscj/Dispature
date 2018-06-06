@@ -146,11 +146,11 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                 'fields': [
                     'photo',
                     'status',
-                    'store',
                     'driver',
                     'tourguide',
                     'accept',
-                    'introduction'
+                    'store',
+                    'model'
                 ]
             }
         ],
@@ -184,6 +184,8 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
         '__str__',
         'name',
         'phone',
+        'store',
+        'model',
         'driver',
         'tourguide',
         'status',
@@ -195,7 +197,9 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
         '__str__',
         'name',
         'phone',
+        'store',
         'driver',
+        'model',
         'tourguide',
     ]
 
@@ -208,11 +212,13 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
     list_filter = [
         'status',
         'accept',
+        'store',
         'tourguide',
         'driver',
+        'model',
     ]
 
-    raw_id_fields = ['store']
+    raw_id_fields = ['store', 'model',]
 
     # other_list_filter = [
     #     'order__start_time',
@@ -603,7 +609,6 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
                     'username',
                     'password',
                     'phone',
-                    'client_type',
                     'company',
                     'name',
                     'is_active',
@@ -616,7 +621,6 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
         '__str__',
         'phone',
         'is_active',
-        'client_type',
         'company'
     ]
 
@@ -624,18 +628,15 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
         '__str__',
         'phone',
         'is_active',
-        'client_type',
         'company'
     ]
 
     readonly_fields = [
-        'client_type',
         'password',
         'username'
     ]
 
     list_filter = [
-        'client_type',
         'company'
     ]
 
@@ -667,7 +668,8 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'addr',
         'email',
         'account',
-        'admin'
+        'admin',
+        'status'
     ]
 
     list_display_links = [
@@ -678,7 +680,8 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'addr',
         'email',
         'account',
-        'admin'
+        'admin',
+        'status'
     ]
 
     raw_id_fields = [
