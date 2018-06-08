@@ -56,7 +56,6 @@ class StaffSerializer(serializers.ModelSerializer):
     tli = TLISerializer(required=False, allow_null=True, many=False)
     ppi = PPISerializer(required=False, allow_null=True, many=False)
     name = serializers.CharField(required=False, allow_null=True)
-    phone = serializers.CharField(required=False, allow_null=True)
     model = VehicleModelSerializer()
 
     class Meta:
@@ -64,16 +63,24 @@ class StaffSerializer(serializers.ModelSerializer):
         fields = ['userId', 'name', 'phone', 'photo', 'status', 'accept', 'dli', 'tli', 'ppi', 'store', 'model',
                   'driver', 'tourguide']
 
-
-class CompanySerializer(serializers.ModelSerializer):
+class ClientMiniSerializer(serializers.ModelSerializer):
 
     class Meta:
+        model = MainModel.Client
+        fields = ['userId', 'name']
+
+class CompanySerializer(serializers.ModelSerializer):
+    phone = PhoneNumberField()
+    tel = PhoneNumberField()
+    client = ClientMiniSerializer(read_only=True, many=True)
+    
+    class Meta:
         model = MainModel.Company
-        fields = '__all__'                  
+        fields = '__all__'
 
 class ClientSerializer(serializers.ModelSerializer):
 
-    company = CompanySerializer()
+    company = CompanySerializer(allow_null=True)
 
     class Meta:
         model = MainModel.Client

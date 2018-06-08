@@ -14,8 +14,8 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.decorators import list_route, api_view, detail_route
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .permissions import (IsStaffSelf, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
-from .serializers import (OrderStaffSerializer, StaffSerializer,VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
+from .permissions import (IsStaffSelf, IsClientAdmin, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
+from .serializers import (OrderStaffSerializer, StaffSerializer, CompanySerializer, ClientSerializer, VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
 import main.models as MainModle
 from .forms import StaffCreationForm
 
@@ -41,7 +41,6 @@ class BaseModelViewSet(viewsets.ModelViewSet):
 class StaffViewSet(BaseModelViewSet):
     queryset = MainModle.Staff.objects.all()
     serializer_class = StaffSerializer
-    pagination_class = PageNumberPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store', 'model']
     search_fields = '__all__'
@@ -68,7 +67,7 @@ class StaffViewSet(BaseModelViewSet):
         return [permission() for permission in permission_classes]
 
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
-    def getSelf(self, request, pk=None):
+    def self(self, request, pk=None):
         try:
             user = request.user.staff
         except Exception:
@@ -77,28 +76,61 @@ class StaffViewSet(BaseModelViewSet):
         staff = StaffSerializer(user)
         return Response(staff.data)
 
-class VehicleViewSet(BaseModelViewSet):
-    queryset = MainModle.Vehicle.objects.all()
-    serializer_class = VehicleSerializer
+class CompanyViewSet(BaseModelViewSet):
+    queryset = MainModle.Company.objects.all()
+    serializer_class = CompanySerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = PageNumberPagination
+    pagination_class = None
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = '__all__'
+    # filter_fields = '__all__'
     search_fields = '__all__'
     ordering_fields = '__all__'
 
-    def get_permissions(self):
-        if self.action == 'list':
-            permission_classes = [AllowAny]
-        else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
+class ClientViewSet(BaseModelViewSet):
+    queryset = MainModle.Client.objects.all()
+    serializer_class = ClientSerializer
+    pagination_class = None
+    permission_classes = [IsAuthenticated]
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+
+    @list_route(methods=['get'], permission_classes=[IsAuthenticated])
+    def self(self, request, pk=None):
+        try:
+            user = request.user.client
+        except Exception:
+            return Response(status=401)
+        
+        client = ClientSerializer(user)
+        return Response(client.data)
+    
+    @detail_route(methods=['put'], permission_classes=[IsAuthenticated])
+    def bind(self, request, pk=None):
+        try:
+            user = request.user.client
+        except Exception:
+            return Response(status=401)
+          
+        name = self.request.query_params.get('name', None)
+        verify = self.request.query_params.get('verify', None)
+
+        if name is not None and verify is not None:
+            try:
+                company = MainModle.Company.objects.get(name=name)
+                if company.verify == verify:
+                    user.company = company
+                    user.save()
+                else:
+                    return Response({'result':'verify error'},status=500)
+            except Exception:
+                return Response({'result':'name error'},status=500)
+
+        client = ClientSerializer(user)
+        return Response(client.data)
 
 class OrderStaffViewSet(BaseModelViewSet):
     queryset = MainModle.OrderStaff.objects.exclude(status=3)
     serializer_class = OrderStaffSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = PageNumberPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
     search_fields = '__all__'
@@ -108,6 +140,7 @@ class StoreViewSet(BaseModelViewSet):
     queryset = MainModle.Store.objects.all()
     serializer_class = StoreSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = ['id']
     search_fields = '__all__'
@@ -117,8 +150,8 @@ class VehicleModelSellViewSet(BaseModelViewSet):
     queryset = MainModle.VehicleModel.objects.all()
     serializer_class = VehicleModelSellSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-
     filter_fields = ['model', 'name', 'seats']
     search_fields = '__all__'
     ordering_fields = '__all__'
@@ -152,7 +185,6 @@ class VehicleModelSellViewSet(BaseModelViewSet):
 class StaffModelViewSet(BaseModelViewSet):
     queryset = MainModle.Staff.objects.all()
     serializer_class = StaffSerializer
-    pagination_class = PageNumberPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store', 'model__model']
     search_fields = '__all__'

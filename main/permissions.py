@@ -52,3 +52,13 @@ class IsStaffSelf(BasePermission):
             logger.info(e)
 
         return False
+
+class IsClientAdmin(BasePermission):
+
+    def has_permission(self, request, view):
+        try:
+            return request.user and request.user.is_active and (request.user.client.company.admin == request.user.client)
+        except Exception as e:
+            logger.info(e)
+
+        return False

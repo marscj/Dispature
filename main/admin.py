@@ -174,7 +174,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                     'password2',
                     'name',
                     'phone',
-                    'verifycode',
+                    'verify',
                 ]
             }
         ],
@@ -399,7 +399,7 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
         'dt_day_pay',
         'latitude',
         'longitude',
-        'verifycode'
+        'verify'
     ]
 
     list_display = [
@@ -408,7 +408,7 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'email',
         'addr',
-        'verifycode'
+        'verify'
     ]
 
     list_display_links = [
@@ -417,17 +417,17 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'email',
         'addr',
-        'verifycode'
+        'verify'
     ]
 
     readonly_fields = [
-        'verifycode'
+        'verify'
     ]
 
     def change_code(self, request, obj):
         from django.utils.crypto import get_random_string
         if request.user.is_superuser:
-            obj.verifycode = get_random_string(
+            obj.verify = get_random_string(
                 length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
             obj.save()
 
@@ -689,13 +689,13 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
     ]
 
     readonly_fields = [
-        'verifycode'
+        'verify'
     ]
 
     def change_code(self, request, obj):
         from django.utils.crypto import get_random_string
         if request.user.is_superuser:
-            obj.verifycode = get_random_string(
+            obj.verify = get_random_string(
                 length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
             obj.save()
 

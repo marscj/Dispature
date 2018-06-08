@@ -98,7 +98,7 @@ class Store(models.Model):
     dt_day_pay = models.FloatField(default=240.0, verbose_name='driver&Tourguide day pay')
     latitude = models.FloatField()
     longitude = models.FloatField()
-    verifycode = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist')
+    verify = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist', verbose_name = 'verify code')
 
     objects = StoreManager
 
@@ -226,6 +226,8 @@ class OrderVehicle(AbstractOrder):
         verbose_name = 'Order Vehicle'
         verbose_name_plural = 'Order Vehicle'
 
+class CompanyManager(models.Manager):
+    pass
 
 class Company(models.Model):
     name = models.CharField(max_length=128, unique=True)
@@ -234,10 +236,12 @@ class Company(models.Model):
     phone = PhoneNumberField(unique=True)
     addr = models.CharField(max_length=256)
     email = models.EmailField(unique=True)
-    verifycode = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Client Regist')
+    verify = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Client Regist', verbose_name = 'verify code')
     account = models.FloatField(default=0.0)
     status = models.IntegerField(default=0, choices=Constants.STATUS)
     admin = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='admin', blank=True, null=True)
+
+    objects = CompanyManager
 
     class Meta:
         verbose_name = 'Company'

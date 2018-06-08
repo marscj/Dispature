@@ -30,8 +30,8 @@ class StaffChangeForm(UserChangeForm):
 
 
 class StaffCreationForm(UserCreationForm):
-    verifycode = forms.CharField(max_length=4, required=True,
-                                 widget=forms.TextInput, help_text='verifycode')
+    verify = forms.CharField(max_length=4, required=True,
+                                 widget=forms.TextInput, help_text='verify code')
     phone = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
         label='Phone number',
@@ -41,17 +41,17 @@ class StaffCreationForm(UserCreationForm):
 
     class Meta:
         model = MainModel.Staff
-        fields = ('username', 'password1', 'password2', 'name', 'phone', 'verifycode')
+        fields = ('username', 'password1', 'password2', 'name', 'phone', 'verify')
 
     def clean_code(self):
-        verifycode = self.cleaned_data['verifycode']
-        verifycode_validate(verifycode)
-        return verifycode
+        verify = self.cleaned_data['verify']
+        verifycode_validate(verify)
+        return verify
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        verifycode = self.cleaned_data['verifycode']
-        store = MainModel.Store.objects.get(verifycode=verifycode)
+        verify = self.cleaned_data['verify']
+        store = MainModel.Store.objects.get(verify=verify)
         if store:
             user.store = store
 
