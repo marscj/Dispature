@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpResponse
 from django.core.files.base import ContentFile
+from django.utils.crypto import get_random_string
 from django.db.models import Q
 
 from rest_framework import viewsets, generics, views
@@ -11,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_extensions.mixins import DetailSerializerMixin
 from rest_framework.filters import OrderingFilter
-from rest_framework.decorators import list_route, api_view, detail_route
+from rest_framework.decorators import action, api_view
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (IsStaffSelf, IsClientAdmin, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
@@ -66,7 +67,7 @@ class StaffViewSet(BaseModelViewSet):
             permission_classes = [IsStaffSelf]
         return [permission() for permission in permission_classes]
 
-    @list_route(methods=['get'], permission_classes=[IsAuthenticated])
+    @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated])
     def self(self, request, pk=None):
         try:
             user = request.user.staff
@@ -86,24 +87,53 @@ class CompanyViewSet(BaseModelViewSet):
     search_fields = '__all__'
     ordering_fields = '__all__'
 
+    @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated])
+    def company(self, request, pk=None):
+        try:
+            user = request.user.client
+        except Exception:
+            return Response(status=401)
+        
+        if user.company is not None:
+            company = CompanySerializer(user.company, allow_null=True)
+            return Response({'result':company.data})
+        else :
+            return Response({'result':None})
+    
+    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated])
+    def unbind(self, request, pk=None):
+        try:
+            unbindUser = MainModle.Client.objects.get(pk=pk)
+        except Exception:
+            return Response(status=401)
+        
+        try:
+            user = request.user.client
+        except Exception:
+            return Response(status=401)
+
+        if user.company is not None:
+            if user.company.admin is not None and user.company.admin.userId == user.userId:
+                if user.company.admin.userId != unbindUser.userId:
+                    unbindUser.company = None
+                    unbindUser.save()
+                    company = CompanySerializer(user.company)
+                    return Response({'code': 0, 'result': company.data})
+                else :
+                    return Response({'code': 1, 'result': 'can not delete admin'})
+            else :
+                return Response({'code': 2, 'result': 'Authentication credentials were not provided.'})
+        else :
+            return Response({'code': 3, 'result': 'you dont have company'})
+
 class ClientViewSet(BaseModelViewSet):
     queryset = MainModle.Client.objects.all()
     serializer_class = ClientSerializer
     pagination_class = None
     permission_classes = [IsAuthenticated]
     filter_backends = (OrderingFilter, DjangoFilterBackend)
-
-    @list_route(methods=['get'], permission_classes=[IsAuthenticated])
-    def self(self, request, pk=None):
-        try:
-            user = request.user.client
-        except Exception:
-            return Response(status=401)
-        
-        client = ClientSerializer(user)
-        return Response(client.data)
     
-    @detail_route(methods=['put'], permission_classes=[IsAuthenticated])
+    @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated])
     def bind(self, request, pk=None):
         try:
             user = request.user.client
@@ -116,16 +146,22 @@ class ClientViewSet(BaseModelViewSet):
         if name is not None and verify is not None:
             try:
                 company = MainModle.Company.objects.get(name=name)
+
                 if company.verify == verify:
                     user.company = company
                     user.save()
-                else:
-                    return Response({'result':'verify error'},status=500)
-            except Exception:
-                return Response({'result':'name error'},status=500)
 
-        client = ClientSerializer(user)
-        return Response(client.data)
+                    company.verify = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+                    company.save()
+                else:
+                    return Response({'code': 2, 'result':'verify error'})
+            except Exception:
+                return Response({'code': 1, 'result':'name error'})
+
+            client = ClientSerializer(user)
+            return Response({'code': 0, 'result':client.data})
+        else:
+            return Response({'code': 3, 'result':'parameter error'})
 
 class OrderStaffViewSet(BaseModelViewSet):
     queryset = MainModle.OrderStaff.objects.exclude(status=3)

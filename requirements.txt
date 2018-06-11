@@ -1,6 +1,6 @@
 Django>=2.0.1
 django-widgets-improved==1.5.0
-djangorestframework==3.7.7
+djangorestframework==3.8.2
 django-object-actions==0.10.0
 django-jet==1.0.7
 django-filter==1.1.0

@@ -73,6 +73,7 @@ class CompanySerializer(serializers.ModelSerializer):
     phone = PhoneNumberField()
     tel = PhoneNumberField()
     client = ClientMiniSerializer(read_only=True, many=True)
+    admin = ClientMiniSerializer(read_only=True, many=False)
     
     class Meta:
         model = MainModel.Company
