@@ -241,8 +241,7 @@ JET_SIDE_MENU_ITEMS = {
             {'name': 'main.vehiclemodel'},
         ]},
         {'label': _('Orders'), 'items': [
-            {'name': 'main.orderstaff'},
-            {'name': 'main.ordervehicle'},
+             {'name': 'main.order'},
         ]},
         {'label': _('Client'), 'items': [
             {'name': 'main.client'},
@@ -258,12 +257,13 @@ JET_SIDE_MENU_ITEMS = {
             {'name': 'main.vehiclemodel'},
         ]},
         {'label': _('Orders'), 'items': [
-            {'name': 'main.orderstaff'},
-            {'name': 'main.ordervehicle'},
+            {'name': 'main.order'},
         ]},
         {'label': _('Client'), 'items': [
             {'name': 'main.client'},
             {'name': 'main.company'},
+            {'name': 'main.accountrecharge'},
+            {'name': 'main.accountdetail'},
         ]},
     ],
 }

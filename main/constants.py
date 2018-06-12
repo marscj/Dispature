@@ -36,8 +36,8 @@ PICK_TYPE = [
     (1, 'delivery'),
 ]
 
-STAFF_CONFIRM = [
-    (0, 'Waiting'),
-    (1, 'Agree'),
-    (2, 'Disagree'),
+RECHARGE_TYPE = [
+    (0, 'Bank Transfer'),
+    (1, 'Weixin'),
+    (2, 'Alibaba'),
 ]

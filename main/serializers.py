@@ -87,7 +87,7 @@ class ClientSerializer(serializers.ModelSerializer):
         model = MainModel.Client
         fields = ['userId', 'name', 'phone', 'company']
 
-class OrderStaffSerializer(serializers.ModelSerializer):
+class OrderSerializer(serializers.ModelSerializer):
 
     staff = StaffSerializer(required=False, allow_null=True)
     client = ClientSerializer(required=False, allow_null=True)
@@ -96,7 +96,7 @@ class OrderStaffSerializer(serializers.ModelSerializer):
     orderId = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
-        model = MainModel.OrderStaff
+        model = MainModel.Order
         fields = '__all__'
 
 class VehicleModelSellSerializer(serializers.ModelSerializer):

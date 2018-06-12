@@ -436,12 +436,8 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
     change_actions = ('change_code', )
 
 
-@admin.register(MainModel.OrderStaff, site=site)
-class OrderStaffAdmin(PermissionAdmin):
-
-    form = MainForm.OrderStaffForm
-
-    add_form = MainForm.OrderStaffCreateForm
+@admin.register(MainModel.Order, site=site)
+class OrderAdmin(PermissionAdmin):
 
     fields = [
         'orderId',
@@ -451,18 +447,6 @@ class OrderStaffAdmin(PermissionAdmin):
         'duration',
         'status',
         'pay_status',
-        'staff_confirm',
-        'staff',
-        'client',
-        'remake',
-    ]
-
-    add_fields = [
-        'start_time',
-        'end_time',
-        'status',
-        'pay_status',
-        'staff_confirm',
         'staff',
         'client',
         'remake',
@@ -478,7 +462,6 @@ class OrderStaffAdmin(PermissionAdmin):
         'end_time',
         'status',
         'pay_status',
-        'staff_confirm',
     ]
 
     list_display_links = [
@@ -494,7 +477,6 @@ class OrderStaffAdmin(PermissionAdmin):
     list_editable = [
         'status',
         'pay_status',
-        'staff_confirm',
     ]
 
     raw_id_fields = [
@@ -508,84 +490,14 @@ class OrderStaffAdmin(PermissionAdmin):
 
     date_hierarchy = 'create_time'
 
-
-@admin.register(MainModel.OrderVehicle, site=site)
-class OrderVehicleAdmin(PermissionAdmin):
-
-    form = MainForm.OrderVehicleForm
-    add_form = MainForm.OrderVehicleCreateForm
-
-    fields = [
-        'orderId',
-        'amount',
-        'pickup_type',
-        'start_time',
-        'end_time',
-        'duration',
-        'status',
-        'pay_status',
-        'vehicle',
-        'client',
-        'remake',
-    ]
-
-    add_fields = [
-        'pickup_type',
-        'start_time',
-        'end_time',
-        'status',
-        'pay_status',
-        'vehicle',
-        'client',
-        'remake',
-    ]
-
-    list_display = [
-        '__str__',
-        'vehicle',
-        'client',
-        'amount',
-        'duration',
-        'start_time',
-        'end_time',
-        'pickup_type',
-        'status',
-        'pay_status',
-        'remake',
-    ]
-
-    list_display_links = [
-        '__str__',
-        'amount',
-        'start_time',
-        'end_time',
-        'duration',
-        'vehicle',
-        'client',
-        'remake',
-    ]
-
-    list_editable = [
-        'pay_status',
-        'status',
-    ]
-
-    raw_id_fields = [
-        'vehicle',
-        'client'
-    ]
-
-    readonly_fields = [
-        'duration',
-    ]
-
-    date_hierarchy = 'create_time'
-
+    def has_add_permission(self, request):
+        return False
 
 @admin.register(MainModel.Client, site=site)
 class ClientAdmin(BaseUserAdmin, PermissionAdmin):
+    
     add_form = MainForm.ClientCreationForm
-    form = MainForm.ClientChangeForm
+    form = MainForm.ClientForm
 
     add_fieldsets = [
         [
@@ -641,24 +553,10 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
     ]
 
 
-class ClientInline(CompactInline):
-    model = MainModel.Client
-    extra = 0
-
-    fields = [
-        'name',
-        'phone',
-    ]
-
-
 @admin.register(MainModel.Company, site=site)
 class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
 
     form = MainForm.CompanyForm
-
-    inlines = [
-        ClientInline,
-    ]
 
     list_display = [
         '__str__',
@@ -667,7 +565,7 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'addr',
         'email',
-        'account',
+        'balance',
         'admin',
         'status'
     ]
@@ -679,7 +577,7 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'phone',
         'addr',
         'email',
-        'account',
+        'balance',
         'admin',
         'status'
     ]
@@ -702,3 +600,13 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
     change_code.label = "Change Verifycode"
     change_code.short_description = "Change verifycode"
     change_actions = ('change_code', )
+
+@admin.register(MainModel.AccountRecharge, site=site)
+class AccountRechargeAdmin(PermissionAdmin):
+    pass
+
+@admin.register(MainModel.AccountDetail, site=site)
+class AccountDetailAdmin(PermissionAdmin):
+    
+    def has_add_permission(self, request):
+        return False

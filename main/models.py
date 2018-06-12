@@ -120,8 +120,8 @@ class Staff(User):
     driver = models.BooleanField(default=False, verbose_name='Driver ?')  # 是否 司机
     tourguide = models.BooleanField(default=False, verbose_name='TourGuide ?')  # 是否 导游
     update_time = models.DateTimeField(default=timezone.now, editable=False)
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='staff')
-    model = models.ForeignKey('VehicleModel', blank=True, null=True, on_delete=models.CASCADE, related_name='staff')
+    store = models.ForeignKey(Store, on_delete=models.DO_NOTHING, related_name='staff')
+    model = models.ForeignKey('VehicleModel', blank=True, null=True, on_delete=models.DO_NOTHING, related_name='staff')
 
     class Meta:
         verbose_name = 'Staff'
@@ -140,7 +140,7 @@ class VehicleModel(models.Model):
     seats = models.IntegerField(default=5, verbose_name='passengers')  # 乘坐人数
     day_pay = models.IntegerField(default=120)  # 价格
     photo = models.ImageField(upload_to='vehicle', blank=True)  # 图片
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='model')
+    store = models.ForeignKey(Store, on_delete=models.DO_NOTHING, related_name='model')
     
     objects = VehicleModelManager
 
@@ -165,7 +165,7 @@ class Vehicle(models.Model):
     ins_exp = models.DateField()                                        # 日期
     policy_no = models.CharField(max_length=32, unique=True)            # 保险号
     status = models.IntegerField(default=0, choices=Constants.STATUS)
-    model = models.ForeignKey(VehicleModel, on_delete=models.CASCADE, related_name='vehicle')
+    model = models.ForeignKey(VehicleModel, on_delete=models.DO_NOTHING, related_name='vehicle')
 
     objects = VehicleManager
 
@@ -176,55 +176,31 @@ class Vehicle(models.Model):
     def __str__(self):
         return self.traffic_plate_no
 
+class OrderManager(models.Manager):
+    pass
 
-class AbstractOrder(models.Model):
+
+class Order(models.Model):
     orderId = models.CharField(max_length=32, unique=True)
     amount = models.FloatField(default=0.0)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    duration = models.CharField(max_length=128, default='')
+    duration = models.DurationField(max_length=128, default='')
     status = models.IntegerField(default=0, choices=Constants.ORDER_STATUS)
     pay_status = models.IntegerField(default=0, choices=Constants.PAY_STATUS)
     remake = models.TextField(blank=True, max_length=256)
     create_time = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return self.orderId
-
-
-class OrderStaffManager(models.Manager):
-    pass
-
-
-class OrderStaff(AbstractOrder):
-    staff_confirm = models.IntegerField(default=0, choices=Constants.STAFF_CONFIRM)
-    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='order', limit_choices_to={'status': 1, 'accept': True})
-    client = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='order_staff')
-
-    objects = OrderStaffManager
-
-    class Meta:
-        verbose_name = 'Order Staff'
-        verbose_name_plural = 'Order Staff'
-
-
-class OrderVehicleManager(models.Manager):
-    pass
-
-
-class OrderVehicle(AbstractOrder):
     pickup_type = models.IntegerField(default=0, choices=Constants.PICK_TYPE)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='order', limit_choices_to={'status': 1})
-    client = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='order_vehicle')
+    staff = models.ForeignKey(Staff, on_delete=models.DO_NOTHING, related_name='order', limit_choices_to={'status': 1, 'accept': True})
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.DO_NOTHING, related_name='order', limit_choices_to={'status': 1})
+    client = models.ForeignKey('Client', on_delete=models.DO_NOTHING, related_name='order')
 
-    objects = OrderVehicleManager
+    objects = OrderManager
 
     class Meta:
-        verbose_name = 'Order Vehicle'
-        verbose_name_plural = 'Order Vehicle'
+        verbose_name = 'Order'
+        verbose_name_plural = 'Order'
 
 class CompanyManager(models.Manager):
     pass
@@ -237,9 +213,9 @@ class Company(models.Model):
     addr = models.CharField(max_length=256)
     email = models.EmailField(unique=True)
     verify = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Client Regist', verbose_name = 'verify code')
-    account = models.FloatField(default=0.0)
+    balance = models.FloatField(default=0.0)
     status = models.IntegerField(default=0, choices=Constants.STATUS)
-    admin = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='admin', blank=True, null=True)
+    admin = models.ForeignKey('Client', on_delete=models.DO_NOTHING, related_name='admin', blank=True, null=True)
 
     objects = CompanyManager
 
@@ -255,7 +231,7 @@ class Client(User):
     userId = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, unique=True)  # 昵称
     phone = PhoneNumberField(unique=True, verbose_name='Phone number')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='client', blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, related_name='client', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Client'
@@ -263,3 +239,27 @@ class Client(User):
 
     def __str__(self):
         return self.name
+
+class AccountRechargeManager(models.Manager):
+    pass
+
+class AccountRecharge(models.Model):
+    amount = models.FloatField(default=0)
+    recharge_type = models.IntegerField(choices=Constants.RECHARGE_TYPE)
+    serial_number = models.SlugField()
+    create_time = models.DateTimeField(auto_now_add=True)
+    company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, related_name='accountRecharge')
+
+    objects = AccountRechargeManager
+
+class AccountDetailManager(models.Manager):
+    pass
+
+class AccountDetail(models.Model):
+    amount = models.FloatField(default=0)
+    create_time = models.DateTimeField(auto_now_add=True)
+    client = models.ForeignKey(Client, on_delete=models.DO_NOTHING, related_name='accountDetail')
+    order = models.ForeignKey(Order, on_delete=models.DO_NOTHING, related_name='accountDetail')
+    company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, related_name='accountDetail')
+
+    objects = AccountDetailManager

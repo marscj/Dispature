@@ -16,7 +16,7 @@ from rest_framework.decorators import action, api_view
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (IsStaffSelf, IsClientAdmin, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
-from .serializers import (OrderStaffSerializer, StaffSerializer, CompanySerializer, ClientSerializer, VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
+from .serializers import (OrderSerializer, StaffSerializer, CompanySerializer, ClientSerializer, VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
 import main.models as MainModle
 from .forms import StaffCreationForm
 
@@ -163,9 +163,9 @@ class ClientViewSet(BaseModelViewSet):
         else:
             return Response({'code': 3, 'result':'parameter error'})
 
-class OrderStaffViewSet(BaseModelViewSet):
-    queryset = MainModle.OrderStaff.objects.exclude(status=3)
-    serializer_class = OrderStaffSerializer
+class OrderViewSet(BaseModelViewSet):
+    queryset = MainModle.Order.objects.exclude(status=3)
+    serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = '__all__'
