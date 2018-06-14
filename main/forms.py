@@ -70,13 +70,6 @@ class ClientCreationForm(UserCreationForm):
         model = MainModel.Client
         fields = '__all__'
 
-    def save(self, commit=True):
-        user = super().save(commit=True)
-
-        user.name = '用户%08d' % user.userId
-
-        return user
-
 
 class ClientForm(UserChangeForm):
     phone = PhoneNumberField(
@@ -153,3 +146,28 @@ class CompanyForm(forms.ModelForm):
 # def get_amount(self, duration, pay):
 #         days, hours, minutes = Tools.convert_timedelta(duration, 8)
 #         return days, hours, minutes, round((pay * days) + (pay / 24 * hours) + (pay / 8 / 60 * minutes), 2)
+
+class AccountRechargeAddForm(forms.ModelForm):
+    
+    class Meta:
+        model = MainModel.AccountRecharge
+        fields = '__all__'
+
+    def clean_amount(self):
+        amount = self.cleaned_data['amount']
+        
+        if amount <= 0:
+            return ValidationError('Enter a number')
+
+        return amount
+
+    def save(self, commit=True):
+        account = super().save(commit=False)
+        account.company.balance = account.company.balance + account.amount
+        account.company.save()
+        MainModel.AccountDetail.objects.create(amount=account.amount, detail_type=0, order=None, company=account.company)
+        
+        account.save()
+        return account
+
+    

@@ -508,6 +508,7 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
                     'password1',
                     'password2',
                     'phone',
+                    'name',
                     'company'
                 ]
             }
@@ -549,7 +550,8 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
     ]
 
     list_filter = [
-        'company'
+        'company',
+        'is_active',
     ]
 
 
@@ -587,7 +589,9 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
     ]
 
     readonly_fields = [
-        'verify'
+        'verify',
+        'name',
+        'balance'
     ]
 
     def change_code(self, request, obj):
@@ -603,10 +607,95 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
 
 @admin.register(MainModel.AccountRecharge, site=site)
 class AccountRechargeAdmin(PermissionAdmin):
-    pass
+
+    add_form = MainForm.AccountRechargeAddForm
+
+    list_display = [
+        '__str__',
+        'amount',
+        'create_time',
+        'recharge_type',
+        'serial_number',
+    ]
+
+    list_display_links = [
+        '__str__',
+        'amount',
+        'create_time',
+        'recharge_type',
+        'serial_number',
+    ]
+
+    readonly_fields = [
+        'amount',
+        'create_time',
+        'recharge_type',
+        'serial_number',
+        'company'
+    ]
+
+    list_filter =[
+        'company__name'
+    ]
+
+    date_hierarchy = 'create_time'
+
+    def has_delete_permission(self, request, obj=None):
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def get_form(self, request, obj=None, **kwargs):
+        defaults = {}
+        if obj is None and self.add_form:
+            defaults['form'] = self.add_form
+        defaults.update(kwargs)
+        return super().get_form(request, obj, **defaults)
 
 @admin.register(MainModel.AccountDetail, site=site)
 class AccountDetailAdmin(PermissionAdmin):
+
+    fields = [
+        'amount',
+        'detail_type',
+        'order',
+        'company'
+    ]
+
+    list_display = [
+        '__str__',
+        'amount',
+        'detail_type',
+        'order',
+    ]
+
+    list_display_links =[
+        '__str__',
+        'amount',
+        'detail_type',
+        'order',
+    ]
+
+    readonly_fields = [
+        'company',
+        'amount',
+        'detail_type',
+        'order',
+    ]
+
+    list_filter =[
+        'company__name',
+        'detail_type'
+    ]
+
+    date_hierarchy = 'create_time'
     
     def has_add_permission(self, request):
         return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        return True

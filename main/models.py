@@ -245,21 +245,35 @@ class AccountRechargeManager(models.Manager):
 
 class AccountRecharge(models.Model):
     amount = models.FloatField(default=0)
-    recharge_type = models.IntegerField(choices=Constants.RECHARGE_TYPE)
+    recharge_type = models.IntegerField(default=0, choices=Constants.RECHARGE_TYPE)
     serial_number = models.SlugField()
     create_time = models.DateTimeField(auto_now_add=True)
     company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, related_name='accountRecharge')
 
     objects = AccountRechargeManager
 
+    class Meta:
+        verbose_name = 'Recharge'
+        verbose_name_plural = 'Recharge'
+
+    def __str__(self):
+        return self.company.name
+
 class AccountDetailManager(models.Manager):
     pass
 
 class AccountDetail(models.Model):
     amount = models.FloatField(default=0)
+    detail_type = models.IntegerField(default=0, choices=Constants.DETAIL_TYPE)
     create_time = models.DateTimeField(auto_now_add=True)
-    client = models.ForeignKey(Client, on_delete=models.DO_NOTHING, related_name='accountDetail')
-    order = models.ForeignKey(Order, on_delete=models.DO_NOTHING, related_name='accountDetail')
+    order = models.ForeignKey(Order, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='accountDetail')
     company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, related_name='accountDetail')
 
     objects = AccountDetailManager
+
+    class Meta:
+        verbose_name = 'Account Detail'
+        verbose_name_plural = 'Account Detail'
+
+    def __str__(self):
+        return self.company.name

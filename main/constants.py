@@ -32,12 +32,16 @@ PAY_STATUS = [
 ]
 
 PICK_TYPE = [
-    (0, 'self'),
-    (1, 'delivery'),
+    (0, 'Self'),
+    (1, 'Delivery'),
 ]
 
 RECHARGE_TYPE = [
     (0, 'Bank Transfer'),
-    (1, 'Weixin'),
-    (2, 'Alibaba'),
+]
+
+DETAIL_TYPE = [
+    (0, 'Recharge'),
+    (1, 'Reservation'),
+    (2, 'Refund'),
 ]

@@ -155,9 +155,11 @@ TIME_ZONE = 'Asia/Dubai'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
-USE_TZ = False
+USE_TZ = False 
+
+DATETIME_FORMAT = 'Y/m/d G:i'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1024 * 1024 * 2
 
