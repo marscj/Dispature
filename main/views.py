@@ -18,7 +18,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import (IsStaffSelf, IsClientAdmin, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
 from .serializers import (OrderSerializer, StaffSerializer, CompanySerializer, ClientSerializer, VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
 import main.models as MainModle
-from .forms import StaffCreationForm
 
 from rest_framework.renderers import JSONRenderer
 
@@ -164,7 +163,7 @@ class ClientViewSet(BaseModelViewSet):
             return Response({'code': 3, 'result':'parameter error'})
 
 class OrderViewSet(BaseModelViewSet):
-    queryset = MainModle.Order.objects.exclude(status=3)
+    queryset = MainModle.Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (OrderingFilter, DjangoFilterBackend)
@@ -240,14 +239,14 @@ class StaffModelViewSet(BaseModelViewSet):
         return queryset
 
 
-class StaffSigup(views.APIView):
-    permission_classes = [AllowAny]
-    def post(self, request):
-        staff = StaffCreationForm(request.data)
-        if staff.is_valid():
-            staff.save()
-            return Response('ok')
-        return Response(staff.errors, status=400)
+# class StaffSigup(views.APIView):
+#     permission_classes = [AllowAny]
+#     def post(self, request):
+#         staff = StaffCreationForm(request.data)
+#         if staff.is_valid():
+#             staff.save()
+#             return Response('ok')
+#         return Response(staff.errors, status=400)
 
 class UpLoadFile(views.APIView):
 

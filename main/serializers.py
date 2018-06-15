@@ -32,7 +32,7 @@ class StoreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.Store
-        fields = ['id', 'phone', 'tel', 'name', 'email', 'addr', 'latitude', 'longitude', 'driver_day_pay', 'tourguide_day_pay', 'dt_day_pay', 'open_time', 'close_time']
+        fields = ['id', 'phone', 'tel', 'name', 'email', 'addr', 'latitude', 'longitude', 'driver_day_pay', 'tourguide_day_pay', 'dt_day_pay', 'open_time', 'close_time', 'delivery_pay']
 
 
 class VehicleModelSerializer(serializers.ModelSerializer):

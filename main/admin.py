@@ -114,8 +114,8 @@ class PPIInline(admin.StackedInline):
 @admin.register(MainModel.Staff, site=site)
 class StaffAdmin(BaseUserAdmin, PermissionAdmin):
 
+    form = MainForm.StaffForm
     add_form = MainForm.StaffCreationForm
-    form = MainForm.StaffChangeForm
 
     inlines = [
         PPIInline,
@@ -137,6 +137,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                     'password',
                     'phone',
                     'name',
+                    'store',
                 )
             }
         ],
@@ -149,7 +150,6 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                     'driver',
                     'tourguide',
                     'accept',
-                    'store',
                     'model'
                 ]
             }
@@ -174,7 +174,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
                     'password2',
                     'name',
                     'phone',
-                    'verify',
+                    'store',
                 ]
             }
         ],
@@ -215,10 +215,10 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
         'store',
         'tourguide',
         'driver',
-        'model',
+        'model__name',
     ]
 
-    raw_id_fields = ['store', 'model',]
+    raw_id_fields = ['model']
 
     # other_list_filter = [
     #     'order__start_time',
@@ -397,6 +397,7 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
         'driver_day_pay',
         'tourguide_day_pay',
         'dt_day_pay',
+        'delivery_pay',
         'latitude',
         'longitude',
         'verify'
@@ -439,65 +440,113 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
 @admin.register(MainModel.Order, site=site)
 class OrderAdmin(PermissionAdmin):
 
+    add_form = MainForm.OrderCreateForm 
+
+    class Media:
+        js = [
+            'admin/js/new_order.js'
+        ]
+
+    add_fields = [
+        'start_time',
+        'end_time',
+        'delivery_type',
+        'home_delivery_addr',
+        'delivery_addr',
+        'order_type',
+        'staff',
+        'vehicle',
+        'client',
+        'remake',
+    ]
+
     fields = [
         'orderId',
-        'amount',
         'start_time',
         'end_time',
         'duration',
-        'status',
+        'order_status',
         'pay_status',
+        'staff_status',
+        'delivery_type',
+        'home_delivery_addr',
+        'delivery_addr',
+        'order_type',
         'staff',
+        'vehicle',
         'client',
+        'company',
         'remake',
     ]
 
     list_display = [
         '__str__',
-        'staff',
-        'client',
-        'amount',
-        'duration',
         'start_time',
         'end_time',
-        'status',
+        'duration',
+        'order_status',
         'pay_status',
+        'staff_status',
+        'order_type',
+        'delivery_type',
+        'staff',
+        'vehicle',
+        'client',
+        'company'
     ]
 
     list_display_links = [
         '__str__',
-        'staff',
-        'client',
-        'amount',
         'start_time',
         'end_time',
         'duration',
-    ]
-
-    list_editable = [
-        'status',
+        'order_status',
         'pay_status',
+        'staff_status',
+        'order_type',
+        'delivery_type',
+        'staff',
+        'vehicle',
+        'client',
+        'company'
     ]
 
     raw_id_fields = [
         'staff',
-        'client'
+        'client',
+        'company',
+        'vehicle'
     ]
 
     readonly_fields = [
+        'orderId',
+        'start_time',
+        'end_time',
         'duration',
+        'order_type',
+        'client',
+        'company'
     ]
 
     date_hierarchy = 'create_time'
 
-    def has_add_permission(self, request):
-        return False
+    def get_form(self, request, obj=None, **kwargs):
+        defaults = {}
+        if obj is None and self.add_form:
+            defaults['form'] = self.add_form
+        defaults.update(kwargs)
+        return super().get_form(request, obj, **defaults)
+    
+    def get_fields(self, request, obj=None):
+        if not obj and self.add_fields:
+            return self.add_fields
+        return super().get_fields(request, obj)
 
 @admin.register(MainModel.Client, site=site)
 class ClientAdmin(BaseUserAdmin, PermissionAdmin):
-    
-    add_form = MainForm.ClientCreationForm
+
     form = MainForm.ClientForm
+    add_form = MainForm.ClientCreateForm
 
     add_fieldsets = [
         [
@@ -568,6 +617,7 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'addr',
         'email',
         'balance',
+        'discount',
         'admin',
         'status'
     ]
@@ -580,6 +630,7 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
         'addr',
         'email',
         'balance',
+        'discount',
         'admin',
         'status'
     ]
@@ -608,7 +659,7 @@ class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
 @admin.register(MainModel.AccountRecharge, site=site)
 class AccountRechargeAdmin(PermissionAdmin):
 
-    add_form = MainForm.AccountRechargeAddForm
+    add_form = MainForm.AccountRechargeCreateForm
 
     list_display = [
         '__str__',
@@ -655,13 +706,6 @@ class AccountRechargeAdmin(PermissionAdmin):
 
 @admin.register(MainModel.AccountDetail, site=site)
 class AccountDetailAdmin(PermissionAdmin):
-
-    fields = [
-        'amount',
-        'detail_type',
-        'order',
-        'company'
-    ]
 
     list_display = [
         '__str__',

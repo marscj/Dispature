@@ -17,11 +17,22 @@ MODEL = [
     (5, 'BIG BUS'),
 ]
 
+ORDER_TYPE = [
+    (0, 'Driver & Vehicle'),
+    (1, 'Vehicle'),
+    (2, 'Driver & Tourguide'),
+]
+
 ORDER_STATUS = [
     (0, 'Open'),
     (1, 'Cancel'),
     (2, 'Complete'),
-    (3, 'Close'),
+]
+
+STAFF_STATUS = [
+    (0, 'Waiting for confirmation'),
+    (1, 'Agree'),
+    (2, 'Disagree'),
 ]
 
 PAY_STATUS = [
@@ -31,7 +42,7 @@ PAY_STATUS = [
     (3, 'Refunded'),
 ]
 
-PICK_TYPE = [
+DELIVERY_TYPE = [
     (0, 'Self'),
     (1, 'Delivery'),
 ]
@@ -44,4 +55,18 @@ DETAIL_TYPE = [
     (0, 'Recharge'),
     (1, 'Reservation'),
     (2, 'Refund'),
+]
+
+DISCOUNT = [
+    (0, 'None'),
+    (5, '5%'),
+    (10, '10%'),
+    (15, '15%'),
+    (20, '20%'),
+    (25, '25%'),
+    (30, '30%'),
+    (35, '35%'),
+    (40, '40%'),
+    (45, '45%'),
+    (50, '50%'),
 ]

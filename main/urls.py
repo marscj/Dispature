@@ -2,7 +2,7 @@ from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 from django.urls import path
 
-from .views import (StaffViewSet, CompanyViewSet, ClientViewSet, OrderViewSet, StaffSigup, StoreViewSet, VehicleModelSellViewSet, StaffModelViewSet, UpLoadFile)
+from .views import (StaffViewSet, CompanyViewSet, ClientViewSet, OrderViewSet, StoreViewSet, VehicleModelSellViewSet, StaffModelViewSet, UpLoadFile)
 
 from .admin import site
 from .xadmin import xsite
@@ -17,7 +17,7 @@ router.register(r'modelsell', VehicleModelSellViewSet, base_name='store')
 router.register(r'special', StaffModelViewSet, base_name='special')
 
 urlpatterns = [
-    url(r'staffs/regist/', StaffSigup.as_view()),
+    # url(r'staffs/regist/', StaffSigup.as_view()),
     url(r'upload/',UpLoadFile.as_view()),
     path('admin/', site.urls),
     path('xadmin/', xsite.urls),

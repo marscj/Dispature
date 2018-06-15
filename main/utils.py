@@ -22,10 +22,23 @@ class Tools(object):
     def get_nickname():
         return '用户' + get_random_string(length=6, allowed_chars='0123456789')
 
+    
+    @staticmethod
+    def my_round(value, max):
+        if value == 0:
+            return 0
+        if value > max :
+            return 1.0
+        else:
+            return 0.5
+
     @staticmethod
     def convert_timedelta(duration,format):
+        # days, seconds = duration.days, duration.seconds
+        # hours = (days * format + seconds // 3600) % format
+        # minutes = (seconds % 3600) // 60
+        # seconds = (seconds % 60)
+
         days, seconds = duration.days, duration.seconds
-        hours = (days * format + seconds // 3600) % format
-        minutes = (seconds % 3600) // 60
-        seconds = (seconds % 60)
-        return days, hours, minutes
+        hours = Tools.my_round((seconds // 3600) % 24 , 5)
+        return days + hours

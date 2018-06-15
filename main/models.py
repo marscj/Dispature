@@ -95,9 +95,10 @@ class Store(models.Model):
     close_time = models.TimeField(default='18:00')
     driver_day_pay = models.FloatField(default=120.0, verbose_name='driver day pay')  # 日薪
     tourguide_day_pay = models.FloatField(default=120.0, verbose_name='tourguide day pay')  # 日薪
-    dt_day_pay = models.FloatField(default=240.0, verbose_name='driver&Tourguide day pay')
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    dt_day_pay = models.FloatField(default=240.0, verbose_name='driver&Tourguide day pay') # 日薪
+    delivery_pay = models.FloatField(default=100.0)
+    latitude = models.FloatField(default=25.270096)
+    longitude = models.FloatField(default=55.312518)
     verify = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist', verbose_name = 'verify code')
 
     objects = StoreManager
@@ -120,8 +121,8 @@ class Staff(User):
     driver = models.BooleanField(default=False, verbose_name='Driver ?')  # 是否 司机
     tourguide = models.BooleanField(default=False, verbose_name='TourGuide ?')  # 是否 导游
     update_time = models.DateTimeField(default=timezone.now, editable=False)
-    store = models.ForeignKey(Store, on_delete=models.DO_NOTHING, related_name='staff')
-    model = models.ForeignKey('VehicleModel', blank=True, null=True, on_delete=models.DO_NOTHING, related_name='staff')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='staff')
+    model = models.ForeignKey('VehicleModel', blank=True, null=True, on_delete=models.SET_NULL, related_name='staff')
 
     class Meta:
         verbose_name = 'Staff'
@@ -135,12 +136,12 @@ class VehicleModelManager(models.Manager):
 
 class VehicleModel(models.Model):
     model = models.IntegerField(default=0,choices=Constants.MODEL)  # 类型
-    name = models.CharField(max_length=64)  # 名称
+    name = models.CharField(max_length=64, unique=True, verbose_name='model name')  # 名称
     automatic = models.BooleanField(default=True)
     seats = models.IntegerField(default=5, verbose_name='passengers')  # 乘坐人数
     day_pay = models.IntegerField(default=120)  # 价格
     photo = models.ImageField(upload_to='vehicle', blank=True)  # 图片
-    store = models.ForeignKey(Store, on_delete=models.DO_NOTHING, related_name='model')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='model')
     
     objects = VehicleModelManager
 
@@ -165,7 +166,7 @@ class Vehicle(models.Model):
     ins_exp = models.DateField()                                        # 日期
     policy_no = models.CharField(max_length=32, unique=True)            # 保险号
     status = models.IntegerField(default=0, choices=Constants.STATUS)
-    model = models.ForeignKey(VehicleModel, on_delete=models.DO_NOTHING, related_name='vehicle')
+    model = models.ForeignKey(VehicleModel, on_delete=models.CASCADE, related_name='vehicle')
 
     objects = VehicleManager
 
@@ -182,19 +183,22 @@ class OrderManager(models.Manager):
 
 class Order(models.Model):
     orderId = models.CharField(max_length=32, unique=True)
-    amount = models.FloatField(default=0.0)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     duration = models.DurationField(max_length=128, default='')
-    status = models.IntegerField(default=0, choices=Constants.ORDER_STATUS)
+    order_type = models.IntegerField(default=0, choices=Constants.ORDER_TYPE)
+    order_status = models.IntegerField(default=0, choices=Constants.ORDER_STATUS)
     pay_status = models.IntegerField(default=0, choices=Constants.PAY_STATUS)
-    remake = models.TextField(blank=True, max_length=256)
+    staff_status = models.IntegerField(blank=True, null=True, choices=Constants.STAFF_STATUS)
+    remake = models.TextField(blank=True, null=True, max_length=256)
     create_time = models.DateTimeField(auto_now_add=True)
-
-    pickup_type = models.IntegerField(default=0, choices=Constants.PICK_TYPE)
-    staff = models.ForeignKey(Staff, on_delete=models.DO_NOTHING, related_name='order', limit_choices_to={'status': 1, 'accept': True})
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.DO_NOTHING, related_name='order', limit_choices_to={'status': 1})
-    client = models.ForeignKey('Client', on_delete=models.DO_NOTHING, related_name='order')
+    delivery_type = models.IntegerField(default=0, choices=Constants.DELIVERY_TYPE)
+    home_delivery_addr = models.CharField(max_length=128, blank=True, null=True)
+    delivery_addr = models.CharField(max_length=128, blank=True, null=True)
+    staff = models.ForeignKey(Staff, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='order', limit_choices_to={'status': 1, 'accept': True})
+    vehicle = models.ForeignKey(Vehicle, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='order', limit_choices_to={'status': 1})
+    client = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='order')
+    company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='order')
 
     objects = OrderManager
 
@@ -202,20 +206,24 @@ class Order(models.Model):
         verbose_name = 'Order'
         verbose_name_plural = 'Order'
 
+    def __str__(self):
+        return self.orderId
+
 class CompanyManager(models.Manager):
     pass
 
 class Company(models.Model):
-    name = models.CharField(max_length=128, unique=True)
+    name = models.CharField(max_length=128, unique=True, verbose_name='company name')
     contacts = models.CharField(max_length=32)
     tel = PhoneNumberField(unique=True)
     phone = PhoneNumberField(unique=True)
     addr = models.CharField(max_length=256)
     email = models.EmailField(unique=True)
+    discount = models.FloatField(default=0, choices=Constants.DISCOUNT)
     verify = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Client Regist', verbose_name = 'verify code')
     balance = models.FloatField(default=0.0)
     status = models.IntegerField(default=0, choices=Constants.STATUS)
-    admin = models.ForeignKey('Client', on_delete=models.DO_NOTHING, related_name='admin', blank=True, null=True)
+    admin = models.ForeignKey('Client', on_delete=models.SET_NULL, related_name='admin', blank=True, null=True)
 
     objects = CompanyManager
 
@@ -231,7 +239,7 @@ class Client(User):
     userId = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, unique=True)  # 昵称
     phone = PhoneNumberField(unique=True, verbose_name='Phone number')
-    company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, related_name='client', blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='client', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Client'
@@ -248,7 +256,7 @@ class AccountRecharge(models.Model):
     recharge_type = models.IntegerField(default=0, choices=Constants.RECHARGE_TYPE)
     serial_number = models.SlugField()
     create_time = models.DateTimeField(auto_now_add=True)
-    company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, related_name='accountRecharge')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='accountRecharge')
 
     objects = AccountRechargeManager
 
@@ -266,8 +274,8 @@ class AccountDetail(models.Model):
     amount = models.FloatField(default=0)
     detail_type = models.IntegerField(default=0, choices=Constants.DETAIL_TYPE)
     create_time = models.DateTimeField(auto_now_add=True)
-    order = models.ForeignKey(Order, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='accountDetail')
-    company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, related_name='accountDetail')
+    order = models.ForeignKey(Order, blank=True, null=True, on_delete=models.SET_NULL, related_name='accountDetail')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='accountDetail')
 
     objects = AccountDetailManager
 
@@ -277,3 +285,8 @@ class AccountDetail(models.Model):
 
     def __str__(self):
         return self.company.name
+
+class BankAccount(models.Model):
+    car_num = models.SlugField()
+    account_name = models.CharField(max_length=64)
+    bank_name = models.CharField(max_length=128)
