@@ -195,8 +195,8 @@ class Order(models.Model):
     delivery_type = models.IntegerField(default=0, choices=Constants.DELIVERY_TYPE)
     home_delivery_addr = models.CharField(max_length=128, blank=True, null=True)
     delivery_addr = models.CharField(max_length=128, blank=True, null=True)
-    staff = models.ForeignKey(Staff, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='order', limit_choices_to={'status': 1, 'accept': True})
-    vehicle = models.ForeignKey(Vehicle, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='order', limit_choices_to={'status': 1})
+    staff = models.ForeignKey(Staff, blank=True, null=True, on_delete=models.SET_NULL, related_name='order')
+    vehicle = models.ForeignKey(Vehicle, blank=True, null=True, on_delete=models.SET_NULL, related_name='order')
     client = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='order')
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='order')
 

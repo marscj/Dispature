@@ -165,10 +165,12 @@ class OrderCreateForm(forms.ModelForm):
         start_time = self.cleaned_data['start_time']
         end_time = self.cleaned_data['end_time']
 
+        duration = end_time - start_time
+
         if start_time > end_time:
             raise ValidationError('The end time must be after start time')
         
-        if (end_time - start_time).seconds < 3600 * 1:
+        if duration.days * 24 * 3600 + duration.seconds < 3600:
             raise ValidationError('The duration is too short')
         
         # qs = MainModel.Order.objects.filter(

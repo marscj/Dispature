@@ -16,6 +16,7 @@ from .site import BaseAdminSite
 from .base_admin import BaseModelAdmin
 import main.forms as MainForm
 import main.models as MainModel
+from main.order_helper import OrderHelper
 
 site = BaseAdminSite(name='admin')
 
@@ -112,7 +113,7 @@ class PPIInline(admin.StackedInline):
 
 
 @admin.register(MainModel.Staff, site=site)
-class StaffAdmin(BaseUserAdmin, PermissionAdmin):
+class StaffAdmin(BaseUserAdmin, PermissionAdmin, OrderHelper):
 
     form = MainForm.StaffForm
     add_form = MainForm.StaffCreationForm
@@ -220,33 +221,25 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin):
 
     raw_id_fields = ['model']
 
-    # other_list_filter = [
-    #     'order__start_time',
-    #     'order__end_time',
-    # ]
-    #
-    # def get_queryset(self, request):
-    #     qs = super().get_queryset(request)
-    #
-    #     if IS_POPUP_VAR not in request:
-    #         start_time = request.GET.get('order__start_time')
-    #         end_time = request.GET.get('order__end_time')
-    #
-    #         if start_time is not None and end_time is not None:
-    #             if start_time > end_time:
-    #                 start_time, end_time = end_time, start_time
-    #
-    #             if request.GET.get('driver') or request.GET.get('tourguide'):
-    #                 qs = MainModel.Staff.objects.exclude(
-    #                     Q(order__start_time__range=(start_time, end_time))
-    #                     | Q(order__end_time__range=(start_time, end_time)))
-    #
-    #                 return qs
-    #
-    #     if request.user.is_superuser:
-    #         return qs
-    #
-    #     return qs.filter(id=request.user.staff.id)
+    other_list_filter = [
+        'order__start_time',
+        'order__end_time',
+        'order__order_type',
+        'order__orderId'
+    ]
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+    
+        if IS_POPUP_VAR in request.GET:
+            orderId = request.GET.get('order__orderId')
+            orderType = request.GET.get('order__order_type')
+            start_time = request.GET.get('order__start_time')
+            end_time = request.GET.get('order__end_time')
+
+            return self.helper_queryset(orderId, orderType, start_time, end_time)
+    
+        return qs
 
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
@@ -318,27 +311,29 @@ class VehicleAdmin(PermissionAdmin):
         'status', 
     ]
 
-    # other_list_filter = [
-    #     'order__start_time',
-    #     'order__end_time'
-    # ]
+    other_list_filter = [
+        'order__start_time',
+        'order__end_time',
+        'order__order_type',
+        'order__orderId'
+    ]
 
-    # def get_queryset(self, request):
-    #     qs = super().get_queryset(request)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
 
-    #     if IS_POPUP_VAR not in request:
-    #         start_time = request.GET.get('order__start_time')
-    #         end_time = request.GET.get('order__end_time')
+        if IS_POPUP_VAR in request.GET:
+            start_time = request.GET.get('order__start_time')
+            end_time = request.GET.get('order__end_time')
 
-    #         if start_time is not None and end_time is not None:
-    #             if start_time > end_time:
-    #                 start_time, end_time = end_time, start_time
+            if start_time is not None and end_time is not None:
+                if start_time > end_time:
+                    start_time, end_time = end_time, start_time
 
-    #             qs = MainModel.Vehicle.objects.exclude(
-    #                 Q(order__start_time__range=(start_time, end_time))
-    #                 | Q(order__end_time__range=(start_time, end_time)))
-    #             return qs
-    #     return qs
+                qs = MainModel.Vehicle.objects.exclude(
+                    Q(order__start_time__range=(start_time, end_time))
+                    | Q(order__end_time__range=(start_time, end_time)))
+                return qs
+        return qs
 
 
 @admin.register(MainModel.VehicleModel, site=site)
@@ -450,32 +445,13 @@ class OrderAdmin(PermissionAdmin):
     add_fields = [
         'start_time',
         'end_time',
+        'order_type',
         'delivery_type',
         'home_delivery_addr',
         'delivery_addr',
-        'order_type',
         'staff',
         'vehicle',
         'client',
-        'remake',
-    ]
-
-    fields = [
-        'orderId',
-        'start_time',
-        'end_time',
-        'duration',
-        'order_status',
-        'pay_status',
-        'staff_status',
-        'delivery_type',
-        'home_delivery_addr',
-        'delivery_addr',
-        'order_type',
-        'staff',
-        'vehicle',
-        'client',
-        'company',
         'remake',
     ]
 
@@ -520,10 +496,10 @@ class OrderAdmin(PermissionAdmin):
 
     readonly_fields = [
         'orderId',
-        'start_time',
-        'end_time',
         'duration',
         'order_type',
+        'start_time',
+        'end_time',
         'client',
         'company'
     ]
@@ -540,6 +516,46 @@ class OrderAdmin(PermissionAdmin):
     def get_fields(self, request, obj=None):
         if not obj and self.add_fields:
             return self.add_fields
+        else:
+            fields = [
+                'orderId',
+                'start_time',
+                'end_time',
+                'duration',
+                'order_status',
+                'pay_status',
+                'delivery_type',
+                'home_delivery_addr',
+                'delivery_addr',
+                'order_type',
+                'staff',
+                'staff_status',
+                'vehicle',
+                'client',
+                'company',
+                'remake',
+            ]
+
+            if obj.order_type == 0 or obj.order_type == 2:
+                if 'vehicle' in fields:
+                    fields.remove('vehicle')
+                if 'delivery_type' in fields:
+                    fields.remove('delivery_type')
+                if 'home_delivery_addr' in fields:
+                    fields.remove('home_delivery_addr')
+                if 'delivery_addr' in fields:
+                    fields.remove('delivery_addr')
+
+                return fields
+            else:
+                if 'staff' in fields:
+                    fields.remove('staff')
+                
+                if 'staff_status' in fields:
+                    fields.remove('staff_status')
+
+                return fields
+
         return super().get_fields(request, obj)
 
 @admin.register(MainModel.Client, site=site)
