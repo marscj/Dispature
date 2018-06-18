@@ -14,6 +14,7 @@ from phonenumber_field.widgets import PhoneNumberPrefixWidget
 
 from .utils import Tools
 import datetime
+import main.constants as Constants
 
 
 class StaffForm(UserChangeForm):
@@ -130,7 +131,7 @@ class AccountRechargeCreateForm(forms.ModelForm):
         amount = self.cleaned_data['amount']
         
         if amount <= 0:
-            return ValidationError('Enter a number')
+            raise ValidationError('Enter a number')
 
         return amount
 
@@ -148,6 +149,9 @@ class AccountRechargeCreateForm(forms.ModelForm):
 
 class OrderCreateForm(forms.ModelForm):
     
+    staff_status = forms.ChoiceField(required=True, choices=Constants.CREATE_STAFF_STATUS)
+    delivery_type = forms.ChoiceField(required=True, choices=Constants.DELIVERY_TYPE)
+
     class Meta:
         model = MainModel.Order
         fields = [
@@ -161,17 +165,43 @@ class OrderCreateForm(forms.ModelForm):
             'client',
             'remake',
         ]
-    def clean(self):
-        start_time = self.cleaned_data['start_time']
-        end_time = self.cleaned_data['end_time']
 
-        duration = end_time - start_time
+    def clean_staff(self):
+        order_type = self.cleaned_data['order_type']
+        staff = self.cleaned_data['staff']
 
-        if start_time > end_time:
-            raise ValidationError('The end time must be after start time')
+        if order_type == 0 or order_type == 2:
+            if staff is None:
+                raise ValidationError('This field is required')
         
-        if duration.days * 24 * 3600 + duration.seconds < 3600:
-            raise ValidationError('The duration is too short')
+        return staff
+    
+    def clean_vehicle(self):
+        order_type = self.cleaned_data['order_type']
+        vehicle = self.cleaned_data['vehicle']
+
+        if order_type == 1:
+            if vehicle is None:
+                raise ValidationError('This field is required')
+        
+        return vehicle
+
+    def clean(self):
+        clean_data = super().clean()
+
+        start_time = clean_data.get('start_time')
+        end_time = clean_data.get('end_time')
+
+        if start_time is not None and end_time is not None:
+            duration = end_time - start_time
+
+            if start_time > end_time:
+                raise ValidationError('The end time must be after start time')
+            
+            if duration.days * 24 * 3600 + duration.seconds < 3600:
+                raise ValidationError('The duration is too short')
+
+        return clean_data
         
         # qs = MainModel.Order.objects.filter(
         #     Q(start_time__lte=start_time, end_time__gte=start_time)
@@ -199,14 +229,24 @@ class OrderCreateForm(forms.ModelForm):
     
     def save(self, commit=True):
         order = super().save(commit=False)
-    
+
         order.orderId = self.initOrderId()
         order.duration = order.end_time - order.start_time
         order.order_status = 0
         order.pay_status = 1
+        
         if order.staff is not None:
-            order.staff_status = 0
+            order.store = order.staff.store
+        elif order.vehicle is not None:
+            order.store = order.vehicle.model.store
+        
+        if order.order_type == 1:
+            order.staff_status = None
+        else:
+            order.delivery_type = None
+
         order.company = order.client.company
+
         order.save()
 
         self.create_detail(order, self.get_amount(order.duration, 100))

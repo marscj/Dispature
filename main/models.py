@@ -192,14 +192,15 @@ class Order(models.Model):
     staff_status = models.IntegerField(blank=True, null=True, choices=Constants.STAFF_STATUS)
     remake = models.TextField(blank=True, null=True, max_length=256)
     create_time = models.DateTimeField(auto_now_add=True)
-    delivery_type = models.IntegerField(default=0, choices=Constants.DELIVERY_TYPE)
+    delivery_type = models.IntegerField(blank=True, null=True, choices=Constants.DELIVERY_TYPE)
     home_delivery_addr = models.CharField(max_length=128, blank=True, null=True)
     delivery_addr = models.CharField(max_length=128, blank=True, null=True)
     staff = models.ForeignKey(Staff, blank=True, null=True, on_delete=models.SET_NULL, related_name='order')
     vehicle = models.ForeignKey(Vehicle, blank=True, null=True, on_delete=models.SET_NULL, related_name='order')
     client = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='order')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='order')
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='order')
-
+    
     objects = OrderManager
 
     class Meta:

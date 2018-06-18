@@ -18,9 +18,11 @@ MODEL = [
 ]
 
 ORDER_TYPE = [
-    (0, 'Driver & Vehicle'),
-    (1, 'Vehicle'),
-    (2, 'Driver & Tourguide'),
+    (0, 'Vehicle'),
+    (1, 'Driver'),
+    (2, 'Tourguide'),
+    (3, 'Driver & Tourguide'),
+    (4, 'Driver & Vehicle'),
 ]
 
 ORDER_STATUS = [
@@ -33,6 +35,11 @@ STAFF_STATUS = [
     (0, 'Waiting for confirmation'),
     (1, 'Agree'),
     (2, 'Disagree'),
+]
+
+CREATE_STAFF_STATUS = [
+    (0, 'Waiting for confirmation'),
+    (1, 'Agree'),
 ]
 
 PAY_STATUS = [

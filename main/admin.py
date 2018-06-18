@@ -237,7 +237,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin, OrderHelper):
             start_time = request.GET.get('order__start_time')
             end_time = request.GET.get('order__end_time')
 
-            return self.helper_queryset(orderId, orderType, start_time, end_time)
+            return self.order_queryset(orderId, orderType, start_time, end_time)
     
         return qs
 
@@ -259,7 +259,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin, OrderHelper):
 
 
 @admin.register(MainModel.Vehicle, site=site)
-class VehicleAdmin(PermissionAdmin):
+class VehicleAdmin(PermissionAdmin, OrderHelper):
 
     # inlines = [
     #     ImageInline,
@@ -320,19 +320,15 @@ class VehicleAdmin(PermissionAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-
+    
         if IS_POPUP_VAR in request.GET:
+            orderId = request.GET.get('order__orderId')
+            orderType = request.GET.get('order__order_type')
             start_time = request.GET.get('order__start_time')
             end_time = request.GET.get('order__end_time')
 
-            if start_time is not None and end_time is not None:
-                if start_time > end_time:
-                    start_time, end_time = end_time, start_time
-
-                qs = MainModel.Vehicle.objects.exclude(
-                    Q(order__start_time__range=(start_time, end_time))
-                    | Q(order__end_time__range=(start_time, end_time)))
-                return qs
+            return self.order_queryset(orderId, orderType, start_time, end_time)
+    
         return qs
 
 
@@ -449,6 +445,7 @@ class OrderAdmin(PermissionAdmin):
         'delivery_type',
         'home_delivery_addr',
         'delivery_addr',
+        'staff_status',
         'staff',
         'vehicle',
         'client',
@@ -468,7 +465,8 @@ class OrderAdmin(PermissionAdmin):
         'staff',
         'vehicle',
         'client',
-        'company'
+        'store',
+        'company',
     ]
 
     list_display_links = [
@@ -484,6 +482,7 @@ class OrderAdmin(PermissionAdmin):
         'staff',
         'vehicle',
         'client',
+        'store',
         'company'
     ]
 
@@ -491,6 +490,7 @@ class OrderAdmin(PermissionAdmin):
         'staff',
         'client',
         'company',
+        'store',
         'vehicle'
     ]
 
@@ -501,6 +501,7 @@ class OrderAdmin(PermissionAdmin):
         'start_time',
         'end_time',
         'client',
+        'store',
         'company'
     ]
 
@@ -532,6 +533,7 @@ class OrderAdmin(PermissionAdmin):
                 'staff_status',
                 'vehicle',
                 'client',
+                'store',
                 'company',
                 'remake',
             ]

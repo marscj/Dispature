@@ -49,7 +49,7 @@
         });
 
         function delivery(type) {
-            if (type == '0') {
+            if (type == '0' || type == '') {
                 $('#id_home_delivery_addr').parent().parent().attr("style","display:none");
                 $('#id_delivery_addr').parent().parent().attr("style","display:none");
             } else {
@@ -62,6 +62,7 @@
             switch (type) {
                 case '0':
                     $('#id_staff').parent().parent().attr("style","display:block");
+                    $('#id_staff_status').parent().parent().attr("style","display:block");
                     $('#id_vehicle').parent().parent().attr("style","display:none");
                     $('#id_delivery_type').parent().parent().attr("style","display:none");
                     delivery('0');
@@ -69,6 +70,7 @@
 
                 case '1':
                     $('#id_staff').parent().parent().attr("style","display:none");
+                    $('#id_staff_status').parent().parent().attr("style","display:none");
                     $('#id_vehicle').parent().parent().attr("style","display:block");
                     $('#id_delivery_type').parent().parent().attr("style","display:block");
                     delivery($("#id_delivery_type").val());
@@ -76,6 +78,7 @@
 
                 case '2':
                     $('#id_staff').parent().parent().attr("style","display:block");
+                    $('#id_staff_status').parent().parent().attr("style","display:block");
                     $('#id_vehicle').parent().parent().attr("style","display:none");
                     $('#id_delivery_type').parent().parent().attr("style","display:none");
                     delivery('0');
@@ -132,15 +135,22 @@
         }
 
         function getOrderType(str) {
+            
             switch(str) {
-                case "Driver & Vehicle":
+                case "Vehicle":
                 return 0;
 
-                case "Vehicle":
+                case "Driver":
                 return 1;
 
-                case "Driver & Tourguide":
+                case "Tourguide":
                 return 2;
+
+                case "Driver & Tourguide":
+                return 3;
+
+                case "Driver & Vehicle":
+                return 4;
             }
         }
 
