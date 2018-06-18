@@ -170,7 +170,7 @@ class OrderCreateForm(forms.ModelForm):
         order_type = self.cleaned_data['order_type']
         staff = self.cleaned_data['staff']
 
-        if order_type == 0 or order_type == 2:
+        if order_type != 0:
             if staff is None:
                 raise ValidationError('This field is required')
         
@@ -180,7 +180,7 @@ class OrderCreateForm(forms.ModelForm):
         order_type = self.cleaned_data['order_type']
         vehicle = self.cleaned_data['vehicle']
 
-        if order_type == 1:
+        if order_type == 0:
             if vehicle is None:
                 raise ValidationError('This field is required')
         
@@ -240,7 +240,7 @@ class OrderCreateForm(forms.ModelForm):
         elif order.vehicle is not None:
             order.store = order.vehicle.model.store
         
-        if order.order_type == 1:
+        if order.order_type == 0:
             order.staff_status = None
         else:
             order.delivery_type = None

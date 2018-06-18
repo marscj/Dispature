@@ -538,7 +538,7 @@ class OrderAdmin(PermissionAdmin):
                 'remake',
             ]
 
-            if obj.order_type == 0 or obj.order_type == 2:
+            if obj.order_type != 0:
                 if 'vehicle' in fields:
                     fields.remove('vehicle')
                 if 'delivery_type' in fields:
