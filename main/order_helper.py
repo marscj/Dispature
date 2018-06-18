@@ -19,10 +19,10 @@ class OrderHelper(object):
         if orderType == '0': 
             return self._queryset(orderId, start_time, end_time, MainModle.Vehicle.objects.filter(status=1))
         elif orderType == '1':
-            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, accept=True, driver=True, model=None))
+            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True, model=None))
         elif orderType == '2':
-            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, accept=True, tourguide=True, model=None))
+            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, is_active=True, accept=True, tourguide=True, model=None))
         elif orderType == '3':
-            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, accept=True, tourguide=True, driver=True, model=None))
-        elif orderType == '4':
-            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, accept=True, driver=True).exclude(model=None))
+            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, is_active=True, accept=True, tourguide=True, driver=True, model=None))
+        elif orderType == '4': 
+            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True).exclude(model=None))
