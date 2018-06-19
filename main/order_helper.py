@@ -1,6 +1,7 @@
 from django.db.models import Q
+from django.db.models import Count
 
-import main.models as MainModle
+import main.models as MainModel
 
 class OrderHelper(object):
 
@@ -12,17 +13,34 @@ class OrderHelper(object):
             ( Q(order__start_time__range=(start_time, end_time)) 
             | Q(order__end_time__range=(start_time, end_time))))
 
-        return queryset 
+        return queryset
 
-    def order_queryset(self, orderId, orderType, start_time, end_time):
+    def order_queryset(self, orderType, start_time, end_time, orderId=None):
 
         if orderType == '0': 
-            return self._queryset(orderId, start_time, end_time, MainModle.Vehicle.objects.filter(status=1))
+            return self._queryset(orderId, start_time, end_time, MainModel.Vehicle.objects.filter(status=1))
         elif orderType == '1':
-            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True, model=None))
+            return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True, model=None))
         elif orderType == '2':
-            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, is_active=True, accept=True, tourguide=True, model=None))
+            return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, tourguide=True, model=None))
         elif orderType == '3':
-            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, is_active=True, accept=True, tourguide=True, driver=True, model=None))
+            return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, tourguide=True, driver=True, model=None))
         elif orderType == '4': 
-            return self._queryset(orderId, start_time, end_time, MainModle.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True).exclude(model=None))
+            return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True).exclude(model=None))
+    
+    def staff_queryset(self, start_time, end_time, staff, orderId=None):
+        return MainModel.Order.objects.exclude(orderId=orderId).filter(order_status=0, staff=staff).filter(
+            Q(start_time__range=(start_time, end_time)) 
+            | Q(end_time__range=(start_time, end_time))
+            ).aggregate(count=Count('staff'))
+    
+    def vehicle_queryset(self, start_time, end_time, vehicle, orderId=None):
+        return MainModel.Order.objects.exclude(orderId=orderId).filter(order_status=0, vehicle=vehicle).filter(
+            Q(start_time__range=(start_time, end_time)) 
+            | Q(end_time__range=(start_time, end_time))
+            ).aggregate(count=Count('vehicle'))
+
+    def create_detail(self, order, amount):
+        order.company.balance = order.company.balance - amount
+        order.company.save()
+        MainModel.AccountDetail.objects.create(amount=amount, detail_type=1, order=order, company=order.company)

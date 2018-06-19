@@ -17,7 +17,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (IsStaffSelf, IsClientAdmin, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
 from .serializers import (OrderSerializer, StaffSerializer, CompanySerializer, ClientSerializer, VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
-import main.models as MainModle
+import main.models as MainModel
 
 from rest_framework.renderers import JSONRenderer
 
@@ -39,7 +39,7 @@ class BaseModelViewSet(viewsets.ModelViewSet):
     renderer_classes = [Utf8JSONRenderer,]
 
 class StaffViewSet(BaseModelViewSet):
-    queryset = MainModle.Staff.objects.all()
+    queryset = MainModel.Staff.objects.all()
     serializer_class = StaffSerializer
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store', 'model']
@@ -47,7 +47,7 @@ class StaffViewSet(BaseModelViewSet):
     ordering_fields = '__all__' 
 
     def get_queryset(self):
-        queryset = MainModle.Staff.objects.all().filter(status=1, accept=True, model=None)
+        queryset = MainModel.Staff.objects.all().filter(status=1, accept=True, model=None)
         start_time = self.request.query_params.get('start_time', None)
         end_time = self.request.query_params.get('end_time', None)
         
@@ -77,7 +77,7 @@ class StaffViewSet(BaseModelViewSet):
         return Response(staff.data)
 
 class CompanyViewSet(BaseModelViewSet):
-    queryset = MainModle.Company.objects.all()
+    queryset = MainModel.Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [IsAuthenticated]
     pagination_class = None
@@ -102,7 +102,7 @@ class CompanyViewSet(BaseModelViewSet):
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated])
     def unbind(self, request, pk=None):
         try:
-            unbindUser = MainModle.Client.objects.get(pk=pk)
+            unbindUser = MainModel.Client.objects.get(pk=pk)
         except Exception:
             return Response(status=401)
         
@@ -126,7 +126,7 @@ class CompanyViewSet(BaseModelViewSet):
             return Response({'code': 3, 'result': 'you dont have company'})
 
 class ClientViewSet(BaseModelViewSet):
-    queryset = MainModle.Client.objects.all()
+    queryset = MainModel.Client.objects.all()
     serializer_class = ClientSerializer
     pagination_class = None
     permission_classes = [IsAuthenticated]
@@ -144,7 +144,7 @@ class ClientViewSet(BaseModelViewSet):
 
         if name is not None and verify is not None:
             try:
-                company = MainModle.Company.objects.get(name=name)
+                company = MainModel.Company.objects.get(name=name)
 
                 if company.verify == verify:
                     user.company = company
@@ -163,7 +163,7 @@ class ClientViewSet(BaseModelViewSet):
             return Response({'code': 3, 'result':'parameter error'})
 
 class OrderViewSet(BaseModelViewSet):
-    queryset = MainModle.Order.objects.all()
+    queryset = MainModel.Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (OrderingFilter, DjangoFilterBackend)
@@ -172,7 +172,7 @@ class OrderViewSet(BaseModelViewSet):
     ordering_fields = '__all__'
 
 class StoreViewSet(BaseModelViewSet):
-    queryset = MainModle.Store.objects.all()
+    queryset = MainModel.Store.objects.all()
     serializer_class = StoreSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = None
@@ -182,7 +182,7 @@ class StoreViewSet(BaseModelViewSet):
     ordering_fields = '__all__'
 
 class VehicleModelSellViewSet(BaseModelViewSet):
-    queryset = MainModle.VehicleModel.objects.all()
+    queryset = MainModel.VehicleModel.objects.all()
     serializer_class = VehicleModelSellSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = None
@@ -192,7 +192,7 @@ class VehicleModelSellViewSet(BaseModelViewSet):
     ordering_fields = '__all__'
 
     def get_queryset(self):
-        queryset = MainModle.VehicleModel.objects.all()
+        queryset = MainModel.VehicleModel.objects.all()
         store = self.request.query_params.get('store', None)
         model = self.request.query_params.get('model', None)
 
@@ -206,7 +206,7 @@ class VehicleModelSellViewSet(BaseModelViewSet):
         end_time = self.request.query_params.get('end_time', None)
         for item in queryset:
             if start_time is not None and end_time is not None:
-                item.count = MainModle.Vehicle.objects.filter(model=item).exclude(Q(order__status=0)
+                item.count = MainModel.Vehicle.objects.filter(model=item).exclude(Q(order__status=0)
                     & (Q(order__start_time__range=(start_time, end_time))
                     | Q(order__end_time__range=(start_time, end_time)))).count
         
@@ -218,7 +218,7 @@ class VehicleModelSellViewSet(BaseModelViewSet):
         return Response(serializer.data)
 
 class StaffModelViewSet(BaseModelViewSet):
-    queryset = MainModle.Staff.objects.all()
+    queryset = MainModel.Staff.objects.all()
     serializer_class = StaffSerializer
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store', 'model__model']
@@ -226,7 +226,7 @@ class StaffModelViewSet(BaseModelViewSet):
     ordering_fields = '__all__' 
 
     def get_queryset(self):
-        queryset = MainModle.Staff.objects.all().filter(status=1, accept=True).exclude(model=None)
+        queryset = MainModel.Staff.objects.all().filter(status=1, accept=True).exclude(model=None)
         start_time = self.request.query_params.get('start_time', None)
         end_time = self.request.query_params.get('end_time', None)
         

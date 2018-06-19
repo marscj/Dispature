@@ -96,7 +96,7 @@ class Store(models.Model):
     driver_day_pay = models.FloatField(default=120.0, verbose_name='driver day pay')  # 日薪
     tourguide_day_pay = models.FloatField(default=120.0, verbose_name='tourguide day pay')  # 日薪
     dt_day_pay = models.FloatField(default=240.0, verbose_name='driver&Tourguide day pay') # 日薪
-    delivery_pay = models.FloatField(default=100.0)
+    delivery_pay = models.FloatField(default=50.0)
     latitude = models.FloatField(default=25.270096)
     longitude = models.FloatField(default=55.312518)
     verify = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist', verbose_name = 'verify code')
@@ -274,6 +274,7 @@ class AccountDetailManager(models.Manager):
 class AccountDetail(models.Model):
     amount = models.FloatField(default=0)
     detail_type = models.IntegerField(default=0, choices=Constants.DETAIL_TYPE)
+    explanation = models.CharField(max_length=128, blank=True, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
     order = models.ForeignKey(Order, blank=True, null=True, on_delete=models.SET_NULL, related_name='accountDetail')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='accountDetail')

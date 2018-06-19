@@ -10,3 +10,4 @@ python-decouple==3.1
 django_countries==5.3.1
 django-phonenumber-field==2.0.0
 Pillow==5.1.0
+django-guardian == 1.4.9

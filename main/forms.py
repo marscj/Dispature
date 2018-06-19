@@ -1,6 +1,5 @@
 from django import forms
 from django.forms.models import ModelForm
-from django.db.models import Q
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.contenttypes.models import ContentType
 
@@ -15,6 +14,7 @@ from phonenumber_field.widgets import PhoneNumberPrefixWidget
 from .utils import Tools
 import datetime
 import main.constants as Constants
+from main.order_helper import OrderHelper
 
 
 class StaffForm(UserChangeForm):
@@ -147,43 +147,44 @@ class AccountRechargeCreateForm(forms.ModelForm):
         account.save()
         return account
 
-class OrderCreateForm(forms.ModelForm):
-    
+class OrderBaseForm(forms.ModelForm, OrderHelper):
     staff_status = forms.ChoiceField(required=True, choices=Constants.CREATE_STAFF_STATUS)
     delivery_type = forms.ChoiceField(required=True, choices=Constants.DELIVERY_TYPE)
 
     class Meta:
         model = MainModel.Order
-        fields = [
-            'start_time',
-            'end_time',
-            'delivery_type',
-            'home_delivery_addr',
-            'delivery_addr',
-            'staff',
-            'vehicle',
-            'client',
-            'remake',
-        ]
+        fields = '__all__'
 
     def clean_staff(self):
-        order_type = self.cleaned_data['order_type']
-        staff = self.cleaned_data['staff']
+        start_time = self.cleaned_data.get('start_time')
+        end_time = self.cleaned_data.get('end_time')
+        order_type = self.cleaned_data.get('order_type')
+        staff = self.cleaned_data.get('staff')
 
         if order_type != 0:
             if staff is None:
                 raise ValidationError('This field is required')
-        
+            elif start_time is not None and end_time is not None:
+                count = self.staff_queryset(start_time, end_time, staff)
+                if count['count'] > 0:
+                    raise ValidationError('staff is busy')
+
         return staff
     
     def clean_vehicle(self):
-        order_type = self.cleaned_data['order_type']
+        start_time = self.cleaned_data.get('start_time')
+        end_time = self.cleaned_data.get('end_time')
+        order_type = self.cleaned_data.get('order_type')
         vehicle = self.cleaned_data['vehicle']
 
         if order_type == 0:
             if vehicle is None:
                 raise ValidationError('This field is required')
-        
+            elif start_time is not None and end_time is not None:
+                count = self.vehicle_queryset(start_time, end_time, vehicle)
+                if count['count'] > 0:
+                    raise ValidationError('vehicle is busy')
+
         return vehicle
 
     def clean(self):
@@ -202,14 +203,9 @@ class OrderCreateForm(forms.ModelForm):
                 raise ValidationError('The duration is too short')
 
         return clean_data
-        
-        # qs = MainModel.Order.objects.filter(
-        #     Q(start_time__lte=start_time, end_time__gte=start_time)
-        #     | Q(start_time__lte=end_time, end_time__gte=end_time)
-        #     | Q(start_time__gte=start_time, end_time__lte=end_time))
-        # if qs:
-        #     raise ValidationError('%s is busy' % qs[0].staff.name)
 
+class OrderCreateForm(OrderBaseForm):
+    
     def initOrderId(self):
         now = datetime.datetime.now()
         start_time = datetime.datetime(now.year, now.month, now.day, 0, 0, 0)
@@ -223,7 +219,7 @@ class OrderCreateForm(forms.ModelForm):
         return pay * days
 
     def create_detail(self, order, amount):
-        order.company.balance = order.company.balance + amount
+        order.company.balance = order.company.balance - amount
         order.company.save()
         MainModel.AccountDetail.objects.create(amount=amount, detail_type=1, order=order, company=order.company)
     
@@ -233,23 +229,35 @@ class OrderCreateForm(forms.ModelForm):
         order.orderId = self.initOrderId()
         order.duration = order.end_time - order.start_time
         order.order_status = 0
-        order.pay_status = 1
-        
-        if order.staff is not None:
-            order.store = order.staff.store
-        elif order.vehicle is not None:
-            order.store = order.vehicle.model.store
+        order.pay_status = 1     
         
         if order.order_type == 0:
             order.staff_status = None
+            order.store = order.vehicle.model.store
         else:
             order.delivery_type = None
+            order.store = order.staff.store
 
         order.company = order.client.company
 
         order.save()
 
         self.create_detail(order, self.get_amount(order.duration, 100))
+
+        return order
+
+
+class OrderfForm(OrderBaseForm):
+    
+    def save(self, commit=True):
+        order = super().save(commit=False)
+        
+        if order.staff is not None:
+            order.store = order.staff.store
+        elif order.vehicle is not None:
+            order.store = order.vehicle.model.store
+
+        order.save()
 
         return order
 

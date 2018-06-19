@@ -229,17 +229,16 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin, OrderHelper):
     ]
     
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-    
+        
         if IS_POPUP_VAR in request.GET:
             orderId = request.GET.get('order__orderId')
             orderType = request.GET.get('order__order_type')
             start_time = request.GET.get('order__start_time')
             end_time = request.GET.get('order__end_time')
 
-            return self.order_queryset(orderId, orderType, start_time, end_time)
+            return self.order_queryset(orderType, start_time, end_time, orderId)
     
-        return qs
+        return super().get_queryset(request)
 
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
@@ -319,7 +318,6 @@ class VehicleAdmin(PermissionAdmin, OrderHelper):
     ]
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
     
         if IS_POPUP_VAR in request.GET:
             orderId = request.GET.get('order__orderId')
@@ -327,9 +325,9 @@ class VehicleAdmin(PermissionAdmin, OrderHelper):
             start_time = request.GET.get('order__start_time')
             end_time = request.GET.get('order__end_time')
 
-            return self.order_queryset(orderId, orderType, start_time, end_time)
+            return self.order_queryset(orderType, start_time, end_time, orderId)
     
-        return qs
+        return super().get_queryset(request)
 
 
 @admin.register(MainModel.VehicleModel, site=site)
@@ -432,6 +430,7 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
 class OrderAdmin(PermissionAdmin):
 
     add_form = MainForm.OrderCreateForm 
+    form = MainForm.OrderfForm
 
     class Media:
         js = [
@@ -539,23 +538,14 @@ class OrderAdmin(PermissionAdmin):
             ]
 
             if obj.order_type != 0:
-                if 'vehicle' in fields:
-                    fields.remove('vehicle')
-                if 'delivery_type' in fields:
-                    fields.remove('delivery_type')
-                if 'home_delivery_addr' in fields:
-                    fields.remove('home_delivery_addr')
-                if 'delivery_addr' in fields:
-                    fields.remove('delivery_addr')
-
+                fields.remove('vehicle')
+                fields.remove('delivery_type')
+                fields.remove('home_delivery_addr')
+                fields.remove('delivery_addr')
                 return fields
             else:
-                if 'staff' in fields:
-                    fields.remove('staff')
-                
-                if 'staff_status' in fields:
-                    fields.remove('staff_status')
-
+                fields.remove('staff')
+                fields.remove('staff_status')
                 return fields
 
         return super().get_fields(request, obj)
