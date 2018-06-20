@@ -729,6 +729,15 @@ class AccountRechargeAdmin(PermissionAdmin):
 @admin.register(MainModel.AccountDetail, site=site)
 class AccountDetailAdmin(PermissionAdmin):
 
+    fields = [
+        'create_time',
+        'detail_type',
+        'amount',
+        'order',
+        'company',
+        'explanation'
+    ]
+
     list_display = [
         '__str__',
         'amount',
@@ -748,6 +757,7 @@ class AccountDetailAdmin(PermissionAdmin):
         'amount',
         'detail_type',
         'order',
+        'create_time'
     ]
 
     list_filter =[
