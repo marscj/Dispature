@@ -62,7 +62,7 @@ DETAIL_TYPE = [
     (0, 'Recharge'),
     (1, 'Reservation'),
     (2, 'Refund'),
-    (3, 'Other'),
+    (3, 'Surcharge'),
 ]
 
 DISCOUNT = [
