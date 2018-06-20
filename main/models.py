@@ -93,10 +93,11 @@ class Store(models.Model):
     addr = models.CharField(max_length=256)
     open_time = models.TimeField(default='09:00')
     close_time = models.TimeField(default='18:00')
-    driver_day_pay = models.FloatField(default=120.0, verbose_name='driver day pay')  # 日薪
-    tourguide_day_pay = models.FloatField(default=120.0, verbose_name='tourguide day pay')  # 日薪
-    dt_day_pay = models.FloatField(default=240.0, verbose_name='driver&Tourguide day pay') # 日薪
-    delivery_pay = models.FloatField(default=50.0)
+    driver_daily_charge = models.FloatField(default=120.0)  # 日薪
+    tourguide_daily_charge = models.FloatField(default=120.0)  # 日薪
+    dt_daily_charge = models.FloatField(default=200.0, help_text='Driver & Tourguide daily charge') # 日薪
+    home_service_charge = models.FloatField(default=100.0)  #快递费
+    service_charge = models.FloatField(default=20.0) #手续费
     latitude = models.FloatField(default=25.270096)
     longitude = models.FloatField(default=55.312518)
     verify = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist', verbose_name = 'verify code')
@@ -139,7 +140,10 @@ class VehicleModel(models.Model):
     name = models.CharField(max_length=64, unique=True, verbose_name='model name')  # 名称
     automatic = models.BooleanField(default=True)
     seats = models.IntegerField(default=5, verbose_name='passengers')  # 乘坐人数
-    day_pay = models.IntegerField(default=120)  # 价格
+    daily_charge = models.IntegerField(default=120)  # 价格
+    premium_charge = models.IntegerField(default=40) # 保险费
+    special_daily_charge = models.IntegerField(default=400) # 包车
+
     photo = models.ImageField(upload_to='vehicle', blank=True)  # 图片
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='model')
     
@@ -192,14 +196,14 @@ class Order(models.Model):
     staff_status = models.IntegerField(blank=True, null=True, choices=Constants.STAFF_STATUS)
     remake = models.TextField(blank=True, null=True, max_length=256)
     create_time = models.DateTimeField(auto_now_add=True)
-    delivery_type = models.IntegerField(blank=True, null=True, choices=Constants.DELIVERY_TYPE)
-    home_delivery_addr = models.CharField(max_length=128, blank=True, null=True)
-    delivery_addr = models.CharField(max_length=128, blank=True, null=True)
+    service_type = models.IntegerField(blank=True, null=True, choices=Constants.SERVICE_TYPE)
+    pick_up_addr = models.CharField(max_length=128, blank=True, null=True)
+    drop_off_addr = models.CharField(max_length=128, blank=True, null=True)
     staff = models.ForeignKey(Staff, blank=True, null=True, on_delete=models.SET_NULL, related_name='order' , verbose_name='Staff*')
     vehicle = models.ForeignKey(Vehicle, blank=True, null=True, on_delete=models.SET_NULL, related_name='order', verbose_name='Vehicle*')
     client = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='order')
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='order')
-    company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='order')
+    company = models.ForeignKey('Company', blank=True, null=True, on_delete=models.CASCADE, related_name='order')
     
     objects = OrderManager
 

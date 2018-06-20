@@ -27,18 +27,13 @@ class Tools(object):
     def my_round(value, max):
         if value == 0:
             return 0
-        if value > max :
+        if value >= max :
             return 1.0
         else:
             return 0.5
 
     @staticmethod
-    def convert_timedelta(duration,format):
-        # days, seconds = duration.days, duration.seconds
-        # hours = (days * format + seconds // 3600) % format
-        # minutes = (seconds % 3600) // 60
-        # seconds = (seconds % 60)
-
+    def convert_timedelta(duration):
         days, seconds = duration.days, duration.seconds
-        hours = Tools.my_round((seconds // 3600) % 24 , 5)
+        hours = Tools.my_round(seconds // 3600 , 5)
         return days + hours

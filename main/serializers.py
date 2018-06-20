@@ -32,7 +32,7 @@ class StoreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.Store
-        fields = ['id', 'phone', 'tel', 'name', 'email', 'addr', 'latitude', 'longitude', 'driver_day_pay', 'tourguide_day_pay', 'dt_day_pay', 'open_time', 'close_time', 'delivery_pay']
+        fields = ['id', 'phone', 'tel', 'name', 'email', 'addr', 'latitude', 'longitude', 'driver_daily_charge', 'tourguide_daily_charge', 'dt_daily_charge', 'open_time', 'close_time', 'home_service_charge']
 
 
 class VehicleModelSerializer(serializers.ModelSerializer):
@@ -105,4 +105,4 @@ class VehicleModelSellSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.VehicleModel
-        fields = ['id', 'count', 'model', 'name', 'seats', 'day_pay', 'photo', 'store', 'automatic']
+        fields = ['id', 'count', 'model', 'name', 'seats', 'daily_charge', 'photo', 'store', 'automatic']

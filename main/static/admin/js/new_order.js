@@ -3,7 +3,7 @@
 
     $(document).ready(function() {
 
-        delivery($("#id_delivery_type").val());
+        delivery($("#id_service_type").val());
 
         if (getAction(window.location.href) == "add") {
             order($("#id_order_type").val());
@@ -13,8 +13,8 @@
         }
         
 
-        $("#id_delivery_type").change(function(){
-            delivery($("#id_delivery_type").val());
+        $("#id_service_type").change(function(){
+            delivery($("#id_service_type").val());
         });
 
         $("#id_order_type").change(function(){
@@ -57,11 +57,11 @@
 
         function delivery(type) {
             if (type == '0' || type == '') {
-                $('#id_home_delivery_addr').parent().parent().attr("style","display:none");
-                $('#id_delivery_addr').parent().parent().attr("style","display:none");
+                $('#id_pick_up_addr').parent().parent().attr("style","display:none");
+                $('#id_drop_off_addr').parent().parent().attr("style","display:none");
             } else {
-                $('#id_home_delivery_addr').parent().parent().attr("style","display:block");
-                $('#id_delivery_addr').parent().parent().attr("style","display:block");
+                $('#id_pick_up_addr').parent().parent().attr("style","display:block");
+                $('#id_drop_off_addr').parent().parent().attr("style","display:block");
             }
         }
 
@@ -71,15 +71,15 @@
                     $('#id_staff').parent().parent().attr("style","display:none");
                     $('#id_staff_status').parent().parent().attr("style","display:none");
                     $('#id_vehicle').parent().parent().attr("style","display:block");
-                    $('#id_delivery_type').parent().parent().attr("style","display:block");
-                    delivery($("#id_delivery_type").val());
+                    $('#id_service_type').parent().parent().attr("style","display:block");
+                    delivery($("#id_service_type").val());
                 break;
 
                 default:
                     $('#id_staff').parent().parent().attr("style","display:block");
                     $('#id_staff_status').parent().parent().attr("style","display:block");
                     $('#id_vehicle').parent().parent().attr("style","display:none");
-                    $('#id_delivery_type').parent().parent().attr("style","display:none");
+                    $('#id_service_type').parent().parent().attr("style","display:none");
                     delivery('0');
                 break;
             }

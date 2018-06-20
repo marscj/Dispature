@@ -149,7 +149,7 @@ class AccountRechargeCreateForm(forms.ModelForm):
 
 class OrderBaseForm(forms.ModelForm, OrderHelper):
     staff_status = forms.ChoiceField(required=True, choices=Constants.CREATE_STAFF_STATUS)
-    delivery_type = forms.ChoiceField(required=True, choices=Constants.DELIVERY_TYPE)
+    service_type = forms.ChoiceField(required=True, choices=Constants.SERVICE_TYPE)
 
     class Meta:
         model = MainModel.Order
@@ -214,14 +214,69 @@ class OrderCreateForm(OrderBaseForm):
         count = 1 if count == 0 else count + 1
         return '%s-%04d' % (datetime.datetime.now().strftime('%Y-%m-%d'), count)
 
-    def get_amount(self, duration, pay):
-        days = Tools.convert_timedelta(duration, 5)
-        return pay * days
+    def get_amount(self, duration, order_type, store, company, staff=None, vehicle=None, service_type=0):
+
+        days = Tools.convert_timedelta(duration)
+        total = 0
+        if order_type == 0:
+            amount = vehicle.model.daily_charge + vehicle.model.premium_charge
+            service = 0 if service_type == 0 else store.home_service_charge
+            total = (amount * days) + store.service_charge + service
+
+        elif order_type == 4:
+            amount = staff.model.special_daily_charge
+            total = amount * days
+        
+        elif order_type == 1:
+            amount = store.driver_daily_charge
+            total = amount * days
+
+        elif order_type == 2:
+            amount = store.tourguide_daily_charge
+            total = amount * days
+        
+        elif order_type == 2:
+            amount = store.dt_daily_charge
+            total = amount * days
+        
+        return total * (1 - company.discount)
 
     def create_detail(self, order, amount):
-        order.company.balance = order.company.balance - amount
-        order.company.save()
-        MainModel.AccountDetail.objects.create(amount=amount, detail_type=1, order=order, company=order.company)
+        if order.company is not None:
+            order.company.balance = order.company.balance - amount
+            order.company.save()
+            MainModel.AccountDetail.objects.create(amount=amount, detail_type=1, order=order, company=order.company)    
+
+    def clean_client(self):
+        client = self.cleaned_data.get('client')
+        start_time = self.cleaned_data.get('start_time')
+        end_time = self.cleaned_data.get('end_time')
+        order_type = self.cleaned_data.get('order_type')
+        staff = self.cleaned_data.get('staff')
+        vehicle = self.cleaned_data.get('vehicle')
+        service_type = self.cleaned_data.get('service_type')
+
+        if client is not None:
+            if client.company is None:
+                raise ValidationError('client is not a company user')        
+
+        if start_time is not None and end_time is not None:
+            duration = end_time - start_time
+            amount = 0
+
+            if order_type is not None:
+                if order_type == 0:
+                    if vehicle is not None and service_type is not None and client is not None:
+                        amount = self.get_amount(duration, order_type, vehicle.model.store, client.company, None, vehicle, service_type)
+                else:
+                    if staff is not None and client is not None:
+                        amount = self.get_amount(duration, order_type, staff.store, client.company, staff)
+            
+            if client is not None and client.company is not None:
+                if client.company.balance - amount < 0:
+                    raise ValidationError('no balance')
+
+        return client
     
     def save(self, commit=True):
         order = super().save(commit=False)
@@ -234,15 +289,17 @@ class OrderCreateForm(OrderBaseForm):
         if order.order_type == 0:
             order.staff_status = None
             order.store = order.vehicle.model.store
+            amount = self.get_amount(order.duration, order.order_type, order.store, order.client.company, None, order.vehicle, order.service_type)
         else:
-            order.delivery_type = None
+            order.service_type = None
             order.store = order.staff.store
+            amount = self.get_amount(order.duration, order.order_type, order.store, order.client.company, order.staff)
 
         order.company = order.client.company
 
         order.save()
 
-        self.create_detail(order, self.get_amount(order.duration, 100))
+        self.create_detail(order, amount)
 
         return order
 

@@ -14,7 +14,7 @@ from django_object_actions import DjangoObjectActions
 
 from .site import BaseAdminSite
 from .base_admin import BaseModelAdmin
-import main.forms as MainForm
+import main.forms as MainForm 
 import main.models as MainModel
 from main.order_helper import OrderHelper
 
@@ -343,7 +343,9 @@ class VehicleModelAdmin(PermissionAdmin):
         'name',
         'seats',
         'automatic',
-        'day_pay',
+        'daily_charge',
+        'premium_charge',
+        'special_daily_charge',
         'store',
         'photo'
     ]
@@ -354,7 +356,9 @@ class VehicleModelAdmin(PermissionAdmin):
         'model',
         'seats',
         'automatic',
-        'day_pay',
+        'daily_charge',
+        'premium_charge',
+        'special_daily_charge',
     ]
 
     list_display_links = [
@@ -366,7 +370,9 @@ class VehicleModelAdmin(PermissionAdmin):
     ]
 
     list_editable = [
-        'day_pay',
+        'daily_charge',
+        'premium_charge',
+        'special_daily_charge',
     ]
 
 
@@ -383,10 +389,11 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
         'addr',
         'open_time',
         'close_time',
-        'driver_day_pay',
-        'tourguide_day_pay',
-        'dt_day_pay',
-        'delivery_pay',
+        'driver_daily_charge',
+        'tourguide_daily_charge',
+        'dt_daily_charge',
+        'home_service_charge',
+        'service_charge',
         'latitude',
         'longitude',
         'verify'
@@ -441,9 +448,9 @@ class OrderAdmin(PermissionAdmin):
         'start_time',
         'end_time',
         'order_type',
-        'delivery_type',
-        'home_delivery_addr',
-        'delivery_addr',
+        'service_type',
+        'pick_up_addr',
+        'drop_off_addr',
         'staff_status',
         'staff',
         'vehicle',
@@ -460,7 +467,7 @@ class OrderAdmin(PermissionAdmin):
         'pay_status',
         'staff_status',
         'order_type',
-        'delivery_type',
+        'service_type',
         'staff',
         'vehicle',
         'client',
@@ -477,7 +484,7 @@ class OrderAdmin(PermissionAdmin):
         'pay_status',
         'staff_status',
         'order_type',
-        'delivery_type',
+        'service_type',
         'staff',
         'vehicle',
         'client',
@@ -524,9 +531,9 @@ class OrderAdmin(PermissionAdmin):
                 'duration',
                 'order_status',
                 'pay_status',
-                'delivery_type',
-                'home_delivery_addr',
-                'delivery_addr',
+                'service_type',
+                'pick_up_addr',
+                'drop_off_addr',
                 'order_type',
                 'staff',
                 'staff_status',
@@ -539,9 +546,9 @@ class OrderAdmin(PermissionAdmin):
 
             if obj.order_type != 0:
                 fields.remove('vehicle')
-                fields.remove('delivery_type')
-                fields.remove('home_delivery_addr')
-                fields.remove('delivery_addr')
+                fields.remove('service_type')
+                fields.remove('pick_up_addr')
+                fields.remove('drop_off_addr')
                 return fields
             else:
                 fields.remove('staff')
@@ -610,6 +617,13 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
         'company',
         'is_active',
     ]
+
+    def get_queryset(self, request):
+    
+        if IS_POPUP_VAR in request.GET:
+            return MainModel.Client.objects.exclude(company=None)
+    
+        return super().get_queryset(request)
 
 
 @admin.register(MainModel.Company, site=site)
