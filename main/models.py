@@ -121,7 +121,6 @@ class Staff(User):
     accept = models.BooleanField(default=False)
     driver = models.BooleanField(default=False, verbose_name='Driver ?')  # 是否 司机
     tourguide = models.BooleanField(default=False, verbose_name='TourGuide ?')  # 是否 导游
-    update_time = models.DateTimeField(default=timezone.now, editable=False)
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='staff')
     model = models.ForeignKey('VehicleModel', blank=True, null=True, on_delete=models.SET_NULL, related_name='staff')
 
@@ -278,9 +277,10 @@ class AccountDetailManager(models.Manager):
 class AccountDetail(models.Model):
     amount = models.FloatField(default=0)
     detail_type = models.IntegerField(default=0, choices=Constants.DETAIL_TYPE)
+    status = models.BooleanField(default=True, editable=False)
     explanation = models.CharField(max_length=128, blank=True, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
-    order = models.ForeignKey(Order, blank=True, null=True, on_delete=models.SET_NULL, related_name='accountDetail')
+    order = models.ForeignKey(Order, blank=True, null=True, on_delete=models.SET_NULL, related_name='accountDetail', verbose_name='Order*')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='accountDetail')
 
     objects = AccountDetailManager

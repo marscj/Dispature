@@ -11,8 +11,18 @@
             var orderType = convertSpecialCharacter($('fieldset').find('p').eq(4).html().trim());
             order(getOrderType(orderType));
         }
-        
 
+        // if (getAction(window.location.href) == "add") {
+        //     delivery($("#id_service_type").val());
+        // } else {
+        //     var orderType = convertSpecialCharacter($('fieldset').find('p').eq(4).html().trim());
+
+        //     if ( getOrderType(orderType) == "0"){
+        //         var service_type = convertSpecialCharacter($('fieldset').find('p').eq(5).html().trim());
+        //         delivery(getDeliveryType(service_type));
+        //     }
+        // }
+        
         $("#id_service_type").change(function(){
             delivery($("#id_service_type").val());
         });
@@ -150,6 +160,14 @@
 
                 case "Driver & Vehicle":
                 return "4";
+            }
+        }
+
+        function getDeliveryType(str) {
+            if (str == "Self") {
+                return "0";
+            } else {
+                return "1";
             }
         }
 

@@ -148,12 +148,6 @@ class AccountRechargeCreateForm(forms.ModelForm):
         return account
 
 class OrderBaseForm(forms.ModelForm, OrderHelper):
-    staff_status = forms.ChoiceField(required=True, choices=Constants.CREATE_STAFF_STATUS)
-    service_type = forms.ChoiceField(required=True, choices=Constants.SERVICE_TYPE)
-
-    class Meta:
-        model = MainModel.Order
-        fields = '__all__'
 
     def clean_staff(self):
         start_time = self.cleaned_data.get('start_time')
@@ -205,6 +199,13 @@ class OrderBaseForm(forms.ModelForm, OrderHelper):
         return clean_data
 
 class OrderCreateForm(OrderBaseForm):
+
+    staff_status = forms.ChoiceField(required=True, choices=Constants.CREATE_STAFF_STATUS)
+    service_type = forms.ChoiceField(required=True, choices=Constants.SERVICE_TYPE)
+
+    class Meta:
+        model = MainModel.Order
+        fields = '__all__'
     
     def initOrderId(self):
         now = datetime.datetime.now()
@@ -274,7 +275,7 @@ class OrderCreateForm(OrderBaseForm):
             
             if client is not None and client.company is not None:
                 if client.company.balance - amount < 0:
-                    raise ValidationError('no balance')
+                    raise ValidationError('the company no balance')
 
         return client
     
@@ -296,7 +297,6 @@ class OrderCreateForm(OrderBaseForm):
             amount = self.get_amount(order.duration, order.order_type, order.store, order.client.company, order.staff)
 
         order.company = order.client.company
-
         order.save()
 
         self.create_detail(order, amount)
@@ -306,6 +306,15 @@ class OrderCreateForm(OrderBaseForm):
 
 class OrderfForm(OrderBaseForm):
     
+    class Meta:
+        model = MainModel.Order
+        fields = '__all__'
+
+    def clean(self):
+        clean_data = super().clean()
+
+        return clean_data
+
     def save(self, commit=True):
         order = super().save(commit=False)
         
@@ -313,9 +322,68 @@ class OrderfForm(OrderBaseForm):
             order.store = order.staff.store
         elif order.vehicle is not None:
             order.store = order.vehicle.model.store
-
+            
         order.save()
 
+        if order.order_status == 1:
+            if order.pay_status == 2:
+                order.pay_status = 3
+                self.refund(order)
+                order.save()
+            else:
+                order.pay_status = 2
+                order.save()
+        
         return order
 
+class AccountDetailCreateForm(forms.ModelForm):
     
+    detail_type = forms.ChoiceField(required=True, choices=Constants.CREATE_DETAIL_TYPE)
+    explanation = forms.CharField(required=True, max_length=128)
+
+    class Meta:
+        model = MainModel.AccountDetail
+        fields = '__all__'
+
+    def clean_order(self):
+        order = self.cleaned_data.get('order')
+
+        if order is None:
+            raise ValidationError('This field is required')
+        else:
+            if order.order_status == 1:
+                raise ValidationError('Order has been cancelled')
+            
+        return order
+
+    def clean_amount(self):
+        amount = self.cleaned_data['amount']
+        
+        if amount <= 0:
+            raise ValidationError('Enter a number')
+
+        return amount
+
+    def clean(self):
+        clean_data = super().clean()
+
+        order = clean_data.get('order')
+        amount = clean_data.get('amount')
+
+        if order is not None and amount is not None:
+            if order.company.balance - amount < 0:
+                raise ValidationError('the company no balance')
+
+        return clean_data
+
+    def save(self, commit=True):
+        detail = super().save(commit=False)
+
+        detail.company = detail.order.company
+
+        if detail.company is not None:
+            detail.company.balance = detail.company.balance - detail.amount
+            detail.company.save()
+
+        detail.save()
+        return detail

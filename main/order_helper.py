@@ -40,7 +40,13 @@ class OrderHelper(object):
             | Q(end_time__range=(start_time, end_time))
             ).aggregate(count=Count('vehicle'))
 
-    def create_detail(self, order, amount):
-        order.company.balance = order.company.balance - amount
-        order.company.save()
-        MainModel.AccountDetail.objects.create(amount=amount, detail_type=1, order=order, company=order.company)
+    def refund(self, order):
+        query_set = MainModel.AccountDetail.objects.filter(order=order).filter(status=True).filter(Q(detail_type=1) | Q(detail_type=3))
+
+        for query in query_set:
+            order.company.balance = order.company.balance + query.amount
+            order.company.save()
+            query.status = False
+            query.save()
+            MainModel.AccountDetail.objects.create(amount=query.amount, detail_type=2, order=order, company=order.company)
+

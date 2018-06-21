@@ -6,10 +6,8 @@ from django.contrib.admin.options import IS_POPUP_VAR
 from django.utils.translation import gettext, gettext_lazy as _
 from jet.admin import CompactInline
 
-from django.db.models import Q
 from datetime import date
 
-from jet.admin import CompactInline
 from django_object_actions import DjangoObjectActions
 
 from .site import BaseAdminSite
@@ -432,6 +430,25 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
     change_code.short_description = "Change verifycode"
     change_actions = ('change_code', )
 
+class AccountDetailInline(admin.StackedInline):
+    model = MainModel.AccountDetail
+    extra = 0
+
+    readonly_fields = [
+        'amount',
+        'detail_type',
+        'explanation',
+        'company'
+    ]
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 @admin.register(MainModel.Order, site=site)
 class OrderAdmin(PermissionAdmin):
@@ -443,6 +460,10 @@ class OrderAdmin(PermissionAdmin):
         js = [
             'admin/js/new_order.js'
         ]
+
+    inlines = [
+        AccountDetailInline
+    ]
 
     add_fields = [
         'start_time',
@@ -506,56 +527,81 @@ class OrderAdmin(PermissionAdmin):
         'order_type',
         'start_time',
         'end_time',
+        # 'service_type',
+        # 'staff',
+        # 'vehicle',
         'client',
         'store',
         'company'
     ]
 
+    list_filter = [
+        'order_type',
+        'company',
+        'staff',
+        'vehicle',
+        'service_type'
+    ]
+
+    search_fields = [
+        'orderId'
+    ]
+
     date_hierarchy = 'create_time'
 
-    def get_form(self, request, obj=None, **kwargs):
-        defaults = {}
-        if obj is None and self.add_form:
-            defaults['form'] = self.add_form
-        defaults.update(kwargs)
-        return super().get_form(request, obj, **defaults)
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return ()
+            
+        _readonly = []
+
+        if obj.order_status != 0:
+            _readonly = [f.name for f in self.model._meta.fields] #_readonly + ['order_status']
+
+        if obj.pay_status != 3:
+            if 'pay_status' in _readonly:
+                _readonly.remove('pay_status')
+
+        return self.readonly_fields + _readonly
     
     def get_fields(self, request, obj=None):
         if not obj and self.add_fields:
             return self.add_fields
         else:
-            fields = [
-                'orderId',
-                'start_time',
-                'end_time',
-                'duration',
-                'order_status',
-                'pay_status',
-                'service_type',
-                'pick_up_addr',
-                'drop_off_addr',
-                'order_type',
-                'staff',
-                'staff_status',
-                'vehicle',
-                'client',
-                'store',
-                'company',
-                'remake',
-            ]
-
-            if obj.order_type != 0:
-                fields.remove('vehicle')
-                fields.remove('service_type')
-                fields.remove('pick_up_addr')
-                fields.remove('drop_off_addr')
-                return fields
+            if obj.order_type == 0:
+                return [
+                    'orderId',
+                    'start_time',
+                    'end_time',
+                    'duration',
+                    'order_status',
+                    'pay_status',
+                    'order_type',
+                    'service_type',
+                    'pick_up_addr',
+                    'drop_off_addr',
+                    'vehicle',
+                    'client',
+                    'store',
+                    'company',
+                    'remake',
+                ]
             else:
-                fields.remove('staff')
-                fields.remove('staff_status')
-                return fields
-
-        return super().get_fields(request, obj)
+                return [
+                    'orderId',
+                    'start_time',
+                    'end_time',
+                    'duration',
+                    'order_status',
+                    'pay_status',
+                    'order_type',
+                    'staff',
+                    'staff_status',
+                    'client',
+                    'store',
+                    'company',
+                    'remake',
+                ]
 
 @admin.register(MainModel.Client, site=site)
 class ClientAdmin(BaseUserAdmin, PermissionAdmin):
@@ -729,12 +775,21 @@ class AccountRechargeAdmin(PermissionAdmin):
 @admin.register(MainModel.AccountDetail, site=site)
 class AccountDetailAdmin(PermissionAdmin):
 
+    add_form = MainForm.AccountDetailCreateForm
+
     fields = [
         'create_time',
         'detail_type',
         'amount',
         'order',
         'company',
+        'explanation'
+    ]
+
+    add_fields = [
+        'detail_type',
+        'amount',
+        'order',
         'explanation'
     ]
 
@@ -765,10 +820,15 @@ class AccountDetailAdmin(PermissionAdmin):
         'detail_type'
     ]
 
+    raw_id_fields = [
+        'order',
+        'company'
+    ]
+
     date_hierarchy = 'create_time'
     
     def has_add_permission(self, request):
-        return False
+        return True
 
     def has_change_permission(self, request, obj=None):
         return True
