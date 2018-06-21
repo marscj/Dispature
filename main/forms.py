@@ -159,8 +159,7 @@ class OrderBaseForm(forms.ModelForm, OrderHelper):
             if staff is None:
                 raise ValidationError('This field is required')
             elif start_time is not None and end_time is not None:
-                count = self.staff_queryset(start_time, end_time, staff)
-                if count['count'] > 0:
+                if self.order_staff_exsit(start_time, end_time, staff):
                     raise ValidationError('staff is busy')
 
         return staff
@@ -175,8 +174,7 @@ class OrderBaseForm(forms.ModelForm, OrderHelper):
             if vehicle is None:
                 raise ValidationError('This field is required')
             elif start_time is not None and end_time is not None:
-                count = self.vehicle_queryset(start_time, end_time, vehicle)
-                if count['count'] > 0:
+                if self.order_vehicle_exsit(start_time, end_time, vehicle):
                     raise ValidationError('vehicle is busy')
 
         return vehicle
@@ -322,12 +320,16 @@ class OrderfForm(OrderBaseForm):
             order.store = order.staff.store
         elif order.vehicle is not None:
             order.store = order.vehicle.model.store
-            
-        order.save()
+        
+        if order.order_status == 0:
+            if order.staff_status == 2:
+                order.order_status = 1
+                order.pay_status = 2
 
         if order.order_status == 1:
             if order.pay_status == 2:
                 order.pay_status = 3
+                order.save()
                 self.refund(order)
                 order.save()
             else:

@@ -28,20 +28,23 @@ class OrderHelper(object):
         elif orderType == '4': 
             return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True).exclude(model=None))
     
-    def staff_queryset(self, start_time, end_time, staff, orderId=None):
-        return MainModel.Order.objects.exclude(orderId=orderId).filter(order_status=0, staff=staff).filter(
+    def order_staff_exsit(self, start_time, end_time, staff, orderId=None):
+        count = MainModel.Order.objects.exclude(orderId=orderId).filter(order_status=0, staff=staff).filter(
             Q(start_time__range=(start_time, end_time)) 
             | Q(end_time__range=(start_time, end_time))
             ).aggregate(count=Count('staff'))
+        return count['count'] > 0
+
     
-    def vehicle_queryset(self, start_time, end_time, vehicle, orderId=None):
-        return MainModel.Order.objects.exclude(orderId=orderId).filter(order_status=0, vehicle=vehicle).filter(
+    def order_vehicle_exsit(self, start_time, end_time, vehicle, orderId=None):
+        count = MainModel.Order.objects.exclude(orderId=orderId).filter(order_status=0, vehicle=vehicle).filter(
             Q(start_time__range=(start_time, end_time)) 
             | Q(end_time__range=(start_time, end_time))
             ).aggregate(count=Count('vehicle'))
+        return count['count'] > 0
 
     def refund(self, order):
-        query_set = MainModel.AccountDetail.objects.filter(order=order).filter(status=True).filter(Q(detail_type=1) | Q(detail_type=3))
+        query_set = MainModel.AccountDetail.objects.filter(order=order, status=True).filter(Q(detail_type=1) | Q(detail_type=3))
 
         for query in query_set:
             order.company.balance = order.company.balance + query.amount

@@ -13,13 +13,14 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework_extensions.mixins import DetailSerializerMixin
 from rest_framework.filters import OrderingFilter
 from rest_framework.decorators import action, api_view
+from rest_framework.renderers import JSONRenderer
 from django_filters.rest_framework import DjangoFilterBackend
+
 
 from .permissions import (IsStaffSelf, IsClientAdmin, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
 from .serializers import (OrderSerializer, StaffSerializer, CompanySerializer, ClientSerializer, VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
 import main.models as MainModel
-
-from rest_framework.renderers import JSONRenderer
+from main.view_helper import ViewHelper
 
 
 class Utf8JSONRenderer(JSONRenderer):
@@ -38,7 +39,7 @@ class Utf8JSONRenderer(JSONRenderer):
 class BaseModelViewSet(viewsets.ModelViewSet):
     renderer_classes = [Utf8JSONRenderer,]
 
-class StaffViewSet(BaseModelViewSet):
+class StaffViewSet(BaseModelViewSet, ViewHelper):
     queryset = MainModel.Staff.objects.all()
     serializer_class = StaffSerializer
     filter_backends = (OrderingFilter, DjangoFilterBackend)
@@ -47,24 +48,12 @@ class StaffViewSet(BaseModelViewSet):
     ordering_fields = '__all__' 
 
     def get_queryset(self):
-        queryset = MainModel.Staff.objects.all().filter(status=1, accept=True, model=None)
         start_time = self.request.query_params.get('start_time', None)
         end_time = self.request.query_params.get('end_time', None)
         
-        if start_time is not None and end_time is not None:
-            queryset = queryset.exclude(
-                Q(order__status=0)
-                &(Q(order__start_time__range=(start_time, end_time))
-                | Q(order__end_time__range=(start_time, end_time))))
-
+        queryset = self.get_staff_queryset(start_time, end_time)
+        
         return queryset
-
-    def get_permissions(self):
-        if self.action == 'list':
-            permission_classes = [IsStaffAdmin]
-        else:
-            permission_classes = [IsStaffSelf]
-        return [permission() for permission in permission_classes]
 
     @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated])
     def self(self, request, pk=None):
@@ -181,7 +170,7 @@ class StoreViewSet(BaseModelViewSet):
     search_fields = '__all__'
     ordering_fields = '__all__'
 
-class VehicleModelSellViewSet(BaseModelViewSet):
+class VehicleModelSellViewSet(BaseModelViewSet, ViewHelper):
     queryset = MainModel.VehicleModel.objects.all()
     serializer_class = VehicleModelSellSerializer
     permission_classes = [IsAuthenticated]
@@ -192,23 +181,27 @@ class VehicleModelSellViewSet(BaseModelViewSet):
     ordering_fields = '__all__'
 
     def get_queryset(self):
-        queryset = MainModel.VehicleModel.objects.all()
         store = self.request.query_params.get('store', None)
         model = self.request.query_params.get('model', None)
-
-        if store is not None:
-            queryset = queryset.filter(store=store)
-        
-        if model is not None:
-            queryset = queryset.filter(model=model)
-
         start_time = self.request.query_params.get('start_time', None)
         end_time = self.request.query_params.get('end_time', None)
-        for item in queryset:
-            if start_time is not None and end_time is not None:
-                item.count = MainModel.Vehicle.objects.filter(model=item).exclude(Q(order__status=0)
-                    & (Q(order__start_time__range=(start_time, end_time))
-                    | Q(order__end_time__range=(start_time, end_time)))).count
+
+        queryset = self.get_vehiclemodel_queryset(start_time, end_time, model, store)
+
+        # if store is not None:
+        #     queryset = queryset.filter(store=store)
+        
+        # if model is not None:
+        #     queryset = queryset.filter(model=model)
+
+        # start_time = self.request.query_params.get('start_time', None)
+        # end_time = self.request.query_params.get('end_time', None)
+        
+        # for item in queryset:
+        #     if start_time is not None and end_time is not None:
+        #         item.count = MainModel.Vehicle.objects.filter(model=item).exclude(Q(order__status=0)
+        #             & (Q(order__start_time__range=(start_time, end_time))
+        #             | Q(order__end_time__range=(start_time, end_time)))).count
         
         return queryset
 
@@ -217,7 +210,7 @@ class VehicleModelSellViewSet(BaseModelViewSet):
         serializer = VehicleModelSellSerializer(queryset, many=True)
         return Response(serializer.data)
 
-class StaffModelViewSet(BaseModelViewSet):
+class StaffModelViewSet(BaseModelViewSet, ViewHelper):
     queryset = MainModel.Staff.objects.all()
     serializer_class = StaffSerializer
     filter_backends = (OrderingFilter, DjangoFilterBackend)
@@ -226,15 +219,10 @@ class StaffModelViewSet(BaseModelViewSet):
     ordering_fields = '__all__' 
 
     def get_queryset(self):
-        queryset = MainModel.Staff.objects.all().filter(status=1, accept=True).exclude(model=None)
         start_time = self.request.query_params.get('start_time', None)
         end_time = self.request.query_params.get('end_time', None)
         
-        if start_time is not None and end_time is not None:
-            queryset = queryset.exclude(
-                Q(order__status=0)
-                &(Q(order__start_time__range=(start_time, end_time))
-                | Q(order__end_time__range=(start_time, end_time))))
+        queryset = self.get_special_queryset(start_time, end_time)
 
         return queryset
 
