@@ -72,7 +72,6 @@ class ClientMiniSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     phone = PhoneNumberField()
     tel = PhoneNumberField()
-    client = ClientMiniSerializer(read_only=True, many=True)
     admin = ClientMiniSerializer(read_only=True, many=False)
     
     class Meta:
@@ -80,8 +79,6 @@ class CompanySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ClientSerializer(serializers.ModelSerializer):
-
-    company = CompanySerializer(allow_null=True)
 
     class Meta:
         model = MainModel.Client
@@ -91,9 +88,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     staff = StaffSerializer(required=False, allow_null=True)
     client = ClientSerializer(required=False, allow_null=True)
-    start_time = serializers.DateTimeField(required=False, allow_null=True)
-    end_time = serializers.DateTimeField(required=False, allow_null=True)
-    orderId = serializers.CharField(required=False, allow_null=True)
+    company = CompanySerializer(required=True, allow_null=False)
+    store = StoreSerializer(required=False, allow_null=False)
 
     class Meta:
         model = MainModel.Order

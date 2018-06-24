@@ -32,7 +32,7 @@ class ViewHelper(object):
 
         if start_time is not None and end_time is not None:
             for vehicle_model in queryset:
-                vehicle_model.count = self.get_vehicle_queryset(start_time, end_time, vehicle_model)
+                vehicle_model.count = self.get_vehicle_queryset(start_time, end_time, vehicle_model).count()
 
         return queryset
 

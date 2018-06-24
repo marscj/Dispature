@@ -1,133 +1,73 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from django.http import Http404, HttpResponse
-from django.core.files.base import ContentFile
 from django.utils.crypto import get_random_string
-from django.db.models import Q
+from django.core.files.base import ContentFile
 
-from rest_framework import viewsets, generics, views
-from rest_framework.views import APIView
+from rest_framework import views, generics, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
-from rest_framework_extensions.mixins import DetailSerializerMixin
-from rest_framework.filters import OrderingFilter
-from rest_framework.decorators import action, api_view
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
+from rest_framework.filters import OrderingFilter
+from rest_framework import authentication, permissions
+
 from django_filters.rest_framework import DjangoFilterBackend
 
-
-from .permissions import (IsStaffSelf, IsClientAdmin, IsStaffAdmin,IsAuthenticated, AllowAny, IsAdminOrIsSelf)
-from .serializers import (OrderSerializer, StaffSerializer, CompanySerializer, ClientSerializer, VehicleSerializer, TLISerializer,DLISerializer, PPISerializer, StoreSerializer, VehicleModelSellSerializer)
-import main.models as MainModel
 from main.view_helper import ViewHelper
-
+import main.models as MainModel
+import main.serializers as MainSerializers
 
 class Utf8JSONRenderer(JSONRenderer):
     charset = 'utf-8'
 
+class AuthToken(ObtainAuthToken):
+    renderer_classes = (Utf8JSONRenderer,)
 
-# class BaseModelViewSet(viewsets.ModelViewSet, views.APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
 
-#     def get_permissions(self):
-#         if self.action == 'list':
-#             permission_classes = [IsStaffAdmin]
-#         else:
-#             permission_classes = [IsAuthenticated]
-#         return [permission() for permission in permission_classes]
-
-class BaseModelViewSet(viewsets.ModelViewSet):
-    renderer_classes = [Utf8JSONRenderer,]
-
-class StaffViewSet(BaseModelViewSet, ViewHelper):
-    queryset = MainModel.Staff.objects.all()
-    serializer_class = StaffSerializer
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store', 'model']
-    search_fields = '__all__'
-    ordering_fields = '__all__' 
-
-    def get_queryset(self):
-        start_time = self.request.query_params.get('start_time', None)
-        end_time = self.request.query_params.get('end_time', None)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
         
-        queryset = self.get_staff_queryset(start_time, end_time)
-        
-        return queryset
+        token, created = Token.objects.get_or_create(user=user)
 
-    @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated])
-    def self(self, request, pk=None):
         try:
-            user = request.user.staff
+            client = MainSerializers.ClientSerializer(user.client)
+            return Response({
+                    'token': token.key,
+                    'userId': client.data['userId'],
+                    'name': client.data['name'],
+                    'phone': client.data['phone'],
+                    'company': client.data['company'],
+                })
         except Exception:
-            return Response(status=401)
+            pass
+
+        try:
+            staff = MainSerializers.StaffSerializer(user.staff)
+            return Response({
+                    'token': token.key,
+                    'userId': staff.data['userId'],
+                    'name': staff.data['name'],
+                    'phone': staff.data['phone'],
+                    'store': staff.data['store'],
+                })
+        except Exception:
+            pass
         
-        staff = StaffSerializer(user)
-        return Response(staff.data)
+        return Response({'token': token.key})
 
-class CompanyViewSet(BaseModelViewSet):
-    queryset = MainModel.Company.objects.all()
-    serializer_class = CompanySerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = None
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
-    # filter_fields = '__all__'
-    search_fields = '__all__'
-    ordering_fields = '__all__'
+class BindCompany(views.APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
 
-    @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated])
-    def company(self, request, pk=None):
+    def get(self, request):
         try:
             user = request.user.client
         except Exception:
-            return Response(status=401)
+            return Response(status=404)
         
-        if user.company is not None:
-            company = CompanySerializer(user.company, allow_null=True)
-            return Response({'result':company.data})
-        else :
-            return Response({'result':None})
-    
-    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated])
-    def unbind(self, request, pk=None):
-        try:
-            unbindUser = MainModel.Client.objects.get(pk=pk)
-        except Exception:
-            return Response(status=401)
-        
-        try:
-            user = request.user.client
-        except Exception:
-            return Response(status=401)
-
-        if user.company is not None:
-            if user.company.admin is not None and user.company.admin.userId == user.userId:
-                if user.company.admin.userId != unbindUser.userId:
-                    unbindUser.company = None
-                    unbindUser.save()
-                    company = CompanySerializer(user.company)
-                    return Response({'code': 0, 'result': company.data})
-                else :
-                    return Response({'code': 1, 'result': 'can not delete admin'})
-            else :
-                return Response({'code': 2, 'result': 'Authentication credentials were not provided.'})
-        else :
-            return Response({'code': 3, 'result': 'you dont have company'})
-
-class ClientViewSet(BaseModelViewSet):
-    queryset = MainModel.Client.objects.all()
-    serializer_class = ClientSerializer
-    pagination_class = None
-    permission_classes = [IsAuthenticated]
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
-    
-    @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated])
-    def bind(self, request, pk=None):
-        try:
-            user = request.user.client
-        except Exception:
-            return Response(status=401)
-          
         name = self.request.query_params.get('name', None)
         verify = self.request.query_params.get('verify', None)
 
@@ -146,39 +86,122 @@ class ClientViewSet(BaseModelViewSet):
             except Exception:
                 return Response({'code': 1, 'result':'name error'})
 
-            client = ClientSerializer(user)
+            client = MainSerializers.ClientSerializer(user)
             return Response({'code': 0, 'result':client.data})
         else:
             return Response({'code': 3, 'result':'parameter error'})
 
-class OrderViewSet(BaseModelViewSet):
-    queryset = MainModel.Order.objects.all()
-    serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = '__all__'
-    search_fields = '__all__'
-    ordering_fields = '__all__'
+class UnBindCompany(views.APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
 
-class StoreViewSet(BaseModelViewSet):
+    def get(self, request):
+        try:
+            userId = request.query_params.get('userId', None)
+            unbindUser = MainModel.Client.objects.get(userId=userId)
+        except Exception:
+            return Response(status=404)
+        
+        try:
+            user = request.user.client
+        except Exception:
+            return Response(status=404)
+
+        if user.company is not None:
+            if user.company.admin is not None and user.company.admin.userId == user.userId:
+                if user.company.admin.userId != unbindUser.userId:
+                    unbindUser.company = None
+                    unbindUser.save()
+                    company = MainSerializers.CompanySerializer(user.company)
+                    return Response({'code': 0, 'result': company.data})
+                else :
+                    return Response({'code': 1, 'result': 'can not delete admin'})
+            else :
+                return Response({'code': 2, 'result': 'Authentication credentials were not provided.'})
+        else :
+            return Response({'code': 3, 'result': 'you dont have company'})
+
+class StaffViewSet(viewsets.ModelViewSet, ViewHelper):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    queryset = MainModel.Staff.objects.all()
+    serializer_class = MainSerializers.StaffSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ['driver', 'tourguide', 'store']
+
+    def get_queryset(self):
+        start_time = self.request.query_params.get('start_time', None)
+        end_time = self.request.query_params.get('end_time', None)
+        
+        queryset = self.get_staff_queryset(start_time, end_time)
+        return queryset
+
+class SpecialViewSet(viewsets.ModelViewSet, ViewHelper):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    queryset = MainModel.Staff.objects.all()
+    serializer_class = MainSerializers.StaffSerializer
+    
+
+    def get_queryset(self):
+        start_time = self.request.query_params.get('start_time', None)
+        end_time = self.request.query_params.get('end_time', None)
+        
+        queryset = self.get_special_queryset(start_time, end_time)
+        return queryset
+
+
+class CompanyViewSet(viewsets.ModelViewSet):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    queryset = MainModel.Company.objects.all()
+    serializer_class = MainSerializers.CompanySerializer
+    pagination_class = None
+
+    @action(methods=['get'], detail=True, permission_classes=[permissions.IsAuthenticated])
+    def client(self, request, pk=None):
+        try:
+            queryset = MainModel.Company.objects.get(pk=pk)
+        except Exception:
+            return Response(status=404)
+
+        client = MainSerializers.ClientMiniSerializer(queryset.client, many=True)
+        return Response(client.data)
+
+class StoreViewSet(viewsets.ModelViewSet):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
     queryset = MainModel.Store.objects.all()
-    serializer_class = StoreSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = MainSerializers.StoreSerializer
     pagination_class = None
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = ['id']
-    search_fields = '__all__'
-    ordering_fields = '__all__'
 
-class VehicleModelSellViewSet(BaseModelViewSet, ViewHelper):
+class OrderViewSet(viewsets.ModelViewSet):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    queryset = MainModel.Order.objects.all()
+    serializer_class = MainSerializers.OrderSerializer
+
+class ModelViewSet(viewsets.ModelViewSet, ViewHelper):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
     queryset = MainModel.VehicleModel.objects.all()
-    serializer_class = VehicleModelSellSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class =  MainSerializers.VehicleModelSellSerializer
     pagination_class = None
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = ['model', 'name', 'seats']
-    search_fields = '__all__'
-    ordering_fields = '__all__'
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ['model']
 
     def get_queryset(self):
         store = self.request.query_params.get('store', None)
@@ -186,46 +209,13 @@ class VehicleModelSellViewSet(BaseModelViewSet, ViewHelper):
         start_time = self.request.query_params.get('start_time', None)
         end_time = self.request.query_params.get('end_time', None)
 
-        queryset = self.get_vehiclemodel_queryset(start_time, end_time, model, store)
-
-        # if store is not None:
-        #     queryset = queryset.filter(store=store)
-        
-        # if model is not None:
-        #     queryset = queryset.filter(model=model)
-
-        # start_time = self.request.query_params.get('start_time', None)
-        # end_time = self.request.query_params.get('end_time', None)
-        
-        # for item in queryset:
-        #     if start_time is not None and end_time is not None:
-        #         item.count = MainModel.Vehicle.objects.filter(model=item).exclude(Q(order__status=0)
-        #             & (Q(order__start_time__range=(start_time, end_time))
-        #             | Q(order__end_time__range=(start_time, end_time)))).count
-        
+        queryset = self.get_vehiclemodel_queryset(start_time, end_time, model, store)    
         return queryset
 
     def list(self, request):
         queryset = self.get_queryset()
-        serializer = VehicleModelSellSerializer(queryset, many=True)
+        serializer = MainSerializers.VehicleModelSellSerializer(queryset, many=True)
         return Response(serializer.data)
-
-class StaffModelViewSet(BaseModelViewSet, ViewHelper):
-    queryset = MainModel.Staff.objects.all()
-    serializer_class = StaffSerializer
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
-    filter_fields = ['userId', 'driver', 'tourguide', 'status', 'accept', 'store', 'model__model']
-    search_fields = '__all__'
-    ordering_fields = '__all__' 
-
-    def get_queryset(self):
-        start_time = self.request.query_params.get('start_time', None)
-        end_time = self.request.query_params.get('end_time', None)
-        
-        queryset = self.get_special_queryset(start_time, end_time)
-
-        return queryset
-
 
 # class StaffSigup(views.APIView):
 #     permission_classes = [AllowAny]
@@ -251,4 +241,4 @@ class UpLoadFile(views.APIView):
             staff.photo.save(photo.name, file_content)
             staff.save()
 
-            return Response(StaffSerializer(staff).data)
+            return Response(MainSerializers.StaffSerializer(staff).data)

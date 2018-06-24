@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
 
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_extensions',
-    'oauth2_provider',
     'django_filters',
     'django_object_actions',
 
@@ -62,21 +62,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-OAUTH2_PROVIDER = {
-    'ACCESS_TOKEN_EXPIRE_SECONDS': 2592000,
-    'SCOPES': {'read': 'Read scope', 'write': 'Write scope', 'groups': 'Access to your groups'}
-}
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
 
     # 'DEFAULT_PERMISSION_CLASSES': (
     #     'rest_framework.permissions.IsAuthenticated',
     # ),
+
 
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
@@ -228,30 +224,11 @@ JET_THEMES = [
 ]
 
 JET_SIDE_MENU_ITEMS = {
-    'xadmin': [
-        {'label': _('Autho ToolKit'), 'items': [
-            {'name': 'oauth2_provider.application'},
-            {'name': 'oauth2_provider.grant'},
-            {'name': 'oauth2_provider.accesstoken'},
-            {'name': 'oauth2_provider.refreshtoken'},
-        ]},
-        {'label': _('Resources'), 'items': [
-            {'name': 'auth.user'},
-            {'name': 'main.store'},
-            {'name': 'main.staff'},
-            {'name': 'main.vehicle'},
-            {'name': 'main.vehiclemodel'},
-        ]},
-        {'label': _('Orders'), 'items': [
-             {'name': 'main.order'},
-        ]},
-        {'label': _('Client'), 'items': [
-            {'name': 'main.client'},
-            {'name': 'main.company'},
-        ]},
-    ],
-
     'admin': [
+        {'label': _('Setting'), 'items': [
+             {'name': 'auth.user'},
+            {'name': 'authtoken.token'},
+        ]},
         {'label': _('Resources'), 'items': [
             {'name': 'main.store'},
             {'name': 'main.staff'},

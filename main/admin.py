@@ -4,20 +4,26 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.contenttypes.admin import GenericTabularInline, GenericStackedInline
 from django.contrib.admin.options import IS_POPUP_VAR
 from django.utils.translation import gettext, gettext_lazy as _
+
+from rest_framework.authtoken.admin import TokenAdmin
+from rest_framework.authtoken.models import Token
+from django_object_actions import DjangoObjectActions
 from jet.admin import CompactInline
 
 from datetime import date
 
-from django_object_actions import DjangoObjectActions
-
-from .site import BaseAdminSite
-from .base_admin import BaseModelAdmin
+from main.site import BaseAdminSite
+from main.base_admin import BaseModelAdmin
+from main.order_helper import OrderHelper
 import main.forms as MainForm 
 import main.models as MainModel
-from main.order_helper import OrderHelper
 
 site = BaseAdminSite(name='admin')
 
+site.site_title = 'Dispature'
+site.site_header = 'UBang Dispature'
+site.register(Token, TokenAdmin)
+site.register(MainModel.User, UserAdmin)
 
 class BaseUserAdmin(UserAdmin):
 
@@ -83,7 +89,6 @@ class PermissionAdmin(BaseModelAdmin):
         if not obj and self.add_fields:
             return self.add_fields
         return super().get_fields(request, obj)
-
 
 @admin.register(MainModel.PPI, MainModel.DLI, MainModel.TLI, site=site)
 class OtherAdmin(PermissionAdmin):
@@ -676,6 +681,7 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
 class CompanyAdmin(DjangoObjectActions, PermissionAdmin):
 
     form = MainForm.CompanyForm
+    
 
     list_display = [
         '__str__',

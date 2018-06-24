@@ -92,15 +92,13 @@ class CompanyForm(forms.ModelForm):
 
     tel = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
-        label='Tel number*',
-        required=False,
+        required=True,
         initial='+971'
     )
 
     phone = PhoneNumberField(
         widget=PhoneNumberPrefixWidget(),
-        label='Phone number*',
-        required=False,
+        required=True,
         initial='+971'
     )
 
@@ -109,16 +107,19 @@ class CompanyForm(forms.ModelForm):
         fields = '__all__'
 
     def clean_admin(self):
-        admin = self.cleaned_data['admin']
+        admin = self.cleaned_data.get('admin')
+        name = self.cleaned_data.get('name')
+
+        if not self.instance._state.adding:
+            name = self.instance.name
 
         if admin:
             if admin.company:
-                if admin.company.name != self.cleaned_data['name']:
+                if admin.company.name != name:
                     raise ValidationError(
                         '%s is not this company' % admin.name)
             else:
                 raise ValidationError('%s is personal' % admin.name)
-
         return admin
 
 class AccountRechargeCreateForm(forms.ModelForm):
@@ -128,7 +129,7 @@ class AccountRechargeCreateForm(forms.ModelForm):
         fields = '__all__'
 
     def clean_amount(self):
-        amount = self.cleaned_data['amount']
+        amount = self.cleaned_data.get('amount')
         
         if amount <= 0:
             raise ValidationError('Enter a number')
@@ -168,7 +169,7 @@ class OrderBaseForm(forms.ModelForm, OrderHelper):
         start_time = self.cleaned_data.get('start_time')
         end_time = self.cleaned_data.get('end_time')
         order_type = self.cleaned_data.get('order_type')
-        vehicle = self.cleaned_data['vehicle']
+        vehicle = self.cleaned_data.get('vehicle')
 
         if order_type == 0:
             if vehicle is None:
@@ -359,7 +360,7 @@ class AccountDetailCreateForm(forms.ModelForm):
         return order
 
     def clean_amount(self):
-        amount = self.cleaned_data['amount']
+        amount = self.cleaned_data.get('amount')
         
         if amount <= 0:
             raise ValidationError('Enter a number')

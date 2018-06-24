@@ -19,11 +19,6 @@ urlpatterns = urlpatterns + [
     url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
 ]
 
-# OAUTH2
-urlpatterns = urlpatterns + [
-    url(r'^oauth2/', include('oauth2_provider.urls', namespace='oauth2_provider')),
-]
-
 # rest_framework
 if settings.DEBUG:
     urlpatterns = urlpatterns + [
