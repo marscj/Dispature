@@ -139,7 +139,7 @@ class AccountRechargeCreateForm(forms.ModelForm):
     def create_detail(self, account):
         account.company.balance = account.company.balance + account.amount
         account.company.save()
-        MainModel.AccountDetail.objects.create(amount=account.amount, detail_type=0, order=None, company=account.company)
+        MainModel.AccountDetail.objects.create(amount=account.amount, detail_type=0, order=None, company=account.company, balance=account.company.balance)
 
     def save(self, commit=True):
         account = super().save(commit=False)
@@ -245,7 +245,7 @@ class OrderCreateForm(OrderBaseForm):
         if order.company is not None:
             order.company.balance = order.company.balance - amount
             order.company.save()
-            MainModel.AccountDetail.objects.create(amount=amount, detail_type=1, order=order, company=order.company)    
+            MainModel.AccountDetail.objects.create(amount=amount, detail_type=1, order=order, company=order.company, balance=order.company.balance)    
 
     def clean_client(self):
         client = self.cleaned_data.get('client')

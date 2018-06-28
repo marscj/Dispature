@@ -97,8 +97,20 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class VehicleModelSellSerializer(serializers.ModelSerializer):
 
-    count = serializers.IntegerField(default=0)
+    count = serializers.IntegerField()
 
     class Meta:
         model = MainModel.VehicleModel
         fields = ['id', 'count', 'model', 'name', 'seats', 'daily_charge', 'photo', 'store', 'automatic']
+
+class AccountDetailSerializer(serializers.ModelSerializer):
+
+    order = serializers.StringRelatedField(allow_null=True)
+    company = serializers.StringRelatedField()
+    # balance = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MainModel.AccountDetail
+        fields = ['id', 'amount', 'detail_type', 'explanation', 'create_time', 'order', 'company', 'balance']
+    # def get_balance(self, obj):
+    #     return obj.company.balance

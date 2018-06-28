@@ -276,6 +276,7 @@ class AccountDetailManager(models.Manager):
 
 class AccountDetail(models.Model):
     amount = models.FloatField(default=0)
+    balance = models.FloatField(editable=False)
     detail_type = models.IntegerField(default=0, choices=Constants.DETAIL_TYPE)
     status = models.BooleanField(default=True, editable=False)
     explanation = models.CharField(max_length=128, blank=True, null=True)

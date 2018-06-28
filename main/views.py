@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
-from rest_framework.filters import OrderingFilter
 from rest_framework import authentication, permissions
+import rest_framework.filters as filters
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -19,7 +19,7 @@ import main.serializers as MainSerializers
 class Utf8JSONRenderer(JSONRenderer):
     charset = 'utf-8'
 
-class AuthToken(ObtainAuthToken):
+class LogInView(ObtainAuthToken):
     renderer_classes = (Utf8JSONRenderer,)
 
     def post(self, request, *args, **kwargs):
@@ -86,8 +86,8 @@ class BindCompany(views.APIView):
             except Exception:
                 return Response({'code': 1, 'result':'name error'})
 
-            client = MainSerializers.ClientSerializer(user)
-            return Response({'code': 0, 'result':client.data})
+            client = MainSerializers.CompanySerializer(company)
+            return Response({'code': 0, 'result': client.data})
         else:
             return Response({'code': 3, 'result':'parameter error'})
 
@@ -113,7 +113,7 @@ class UnBindCompany(views.APIView):
                 if user.company.admin.userId != unbindUser.userId:
                     unbindUser.company = None
                     unbindUser.save()
-                    company = MainSerializers.CompanySerializer(user.company)
+                    company = MainSerializers.ClientMiniSerializer(user.company.client, many=True)
                     return Response({'code': 0, 'result': company.data})
                 else :
                     return Response({'code': 1, 'result': 'can not delete admin'})
@@ -121,6 +121,52 @@ class UnBindCompany(views.APIView):
                 return Response({'code': 2, 'result': 'Authentication credentials were not provided.'})
         else :
             return Response({'code': 3, 'result': 'you dont have company'})
+
+class CompanyView(views.APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    def get(self, request):
+        try:
+            user = request.user.client
+        except Exception:
+            return Response(status=404)
+
+        if user.company is not None:
+            company = MainSerializers.CompanySerializer(user.company)
+            return Response({'result': company.data})
+        else :
+            return Response({'result': None})
+
+class CompanyClientView(views.APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    def get(self, request):
+        try:
+            user = request.user.client
+        except Exception:
+            return Response(status=404)
+
+        if user.company is not None:
+            client = MainSerializers.ClientMiniSerializer(user.company.client, many=True)
+            return Response({'result': client.data})
+        else :
+            return Response({'result': None})
+
+class AccountDetailViewSet(viewsets.ModelViewSet):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    queryset = MainModel.AccountDetail.objects.all()
+    serializer_class = MainSerializers.AccountDetailSerializer
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_fields = ['company',]
+    ordering = ('-create_time',)
+
 
 class StaffViewSet(viewsets.ModelViewSet, ViewHelper):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -154,26 +200,6 @@ class SpecialViewSet(viewsets.ModelViewSet, ViewHelper):
         
         queryset = self.get_special_queryset(start_time, end_time)
         return queryset
-
-
-class CompanyViewSet(viewsets.ModelViewSet):
-    authentication_classes = (authentication.TokenAuthentication,)
-    permission_classes = (permissions.IsAuthenticated,)
-    renderer_classes = (Utf8JSONRenderer,)
-
-    queryset = MainModel.Company.objects.all()
-    serializer_class = MainSerializers.CompanySerializer
-    pagination_class = None
-
-    @action(methods=['get'], detail=True, permission_classes=[permissions.IsAuthenticated])
-    def client(self, request, pk=None):
-        try:
-            queryset = MainModel.Company.objects.get(pk=pk)
-        except Exception:
-            return Response(status=404)
-
-        client = MainSerializers.ClientMiniSerializer(queryset.client, many=True)
-        return Response(client.data)
 
 class StoreViewSet(viewsets.ModelViewSet):
     authentication_classes = (authentication.TokenAuthentication,)

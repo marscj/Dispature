@@ -51,5 +51,5 @@ class OrderHelper(object):
             order.company.save()
             query.status = False
             query.save()
-            MainModel.AccountDetail.objects.create(amount=query.amount, detail_type=2, order=order, company=order.company)
+            MainModel.AccountDetail.objects.create(amount=query.amount, detail_type=2, order=order, company=order.company, balance=order.company.balance)
 
