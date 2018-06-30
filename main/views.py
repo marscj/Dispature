@@ -192,6 +192,8 @@ class SpecialViewSet(viewsets.ModelViewSet, ViewHelper):
 
     queryset = MainModel.Staff.objects.all()
     serializer_class = MainSerializers.StaffSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ['store', 'model__model']
     
 
     def get_queryset(self):
