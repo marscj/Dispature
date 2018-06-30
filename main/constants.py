@@ -66,7 +66,7 @@ DETAIL_TYPE = [
 ]
 
 CREATE_DETAIL_TYPE = [
-    (3, 'Surcharge'),
+    (3, 'Extra'),
 ]
 
 DISCOUNT = [
