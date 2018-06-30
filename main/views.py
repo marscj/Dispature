@@ -229,7 +229,7 @@ class ModelViewSet(viewsets.ModelViewSet, ViewHelper):
     serializer_class =  MainSerializers.VehicleModelSellSerializer
     pagination_class = None
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ['model']
+    filter_fields = ['model', 'store']
 
     def get_queryset(self):
         store = self.request.query_params.get('store', None)
