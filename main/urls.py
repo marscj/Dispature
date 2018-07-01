@@ -18,6 +18,7 @@ urlpatterns = [
     path('admin/', site.urls),
     url(r'upload/',View.UpLoadFile.as_view()),
     url(r'^login/', View.LogInView.as_view()),
+    url(r'^reset-password/', View.ResetPassword.as_view()),
     url(r'^bind/', View.BindCompany.as_view()),
     url(r'^unbind/', View.UnBindCompany.as_view()),
     url(r'^company/', View.CompanyView.as_view()),

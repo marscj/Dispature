@@ -1,5 +1,6 @@
 from django.utils.crypto import get_random_string
 from django.core.files.base import ContentFile
+from django.contrib.auth import authenticate
 
 from rest_framework import views, generics, viewsets
 from rest_framework.decorators import action
@@ -35,6 +36,7 @@ class LogInView(ObtainAuthToken):
             client = MainSerializers.ClientSerializer(user.client)
             return Response({
                     'token': token.key,
+                    'username': user.username,
                     'userId': client.data['userId'],
                     'name': client.data['name'],
                     'phone': client.data['phone'],
@@ -47,6 +49,7 @@ class LogInView(ObtainAuthToken):
             staff = MainSerializers.StaffSerializer(user.staff)
             return Response({
                     'token': token.key,
+                    'username': user.username,
                     'userId': staff.data['userId'],
                     'name': staff.data['name'],
                     'phone': staff.data['phone'],
@@ -56,6 +59,25 @@ class LogInView(ObtainAuthToken):
             pass
         
         return Response({'token': token.key})
+
+class ResetPassword(views.APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    def post(self, request):
+        username = request.data['username']
+        oldPassword = request.data['oldPassword']
+        newPassword = request.data['newPassword']
+
+        user = authenticate(username=username, password=oldPassword)
+        if user is not None:
+            if user.is_active:
+                user.set_password(newPassword)
+                user.save()
+                return Response({'code': 0, 'result':'ok'})
+            
+        return Response({'code': 1, 'result':'error'})
 
 class BindCompany(views.APIView):
     authentication_classes = (authentication.TokenAuthentication,)
