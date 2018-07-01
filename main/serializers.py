@@ -90,6 +90,7 @@ class OrderSerializer(serializers.ModelSerializer):
     client = ClientSerializer(required=False, allow_null=True)
     company = CompanySerializer(required=True, allow_null=False)
     store = StoreSerializer(required=False, allow_null=False)
+    vehicle = VehicleSerializer(required=False, allow_null=False)
 
     class Meta:
         model = MainModel.Order
