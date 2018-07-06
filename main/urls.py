@@ -14,10 +14,10 @@ router.register(r'models', View.ModelViewSet, base_name='model')
 router.register(r'account-detail', View.AccountDetailViewSet, base_name='model')
 
 urlpatterns = [
-    # url(r'staffs/regist/', StaffSigup.as_view()),
     path('admin/', site.urls),
     url(r'upload/',View.UpLoadFile.as_view()),
     url(r'^login/', View.LogInView.as_view()),
+    url(r'^signup', View.ClientSignUp.as_view()),
     url(r'^reset-password/', View.ResetPassword.as_view()),
     url(r'^bind/', View.BindCompany.as_view()),
     url(r'^unbind/', View.UnBindCompany.as_view()),

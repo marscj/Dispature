@@ -16,6 +16,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from main.view_helper import ViewHelper
 import main.models as MainModel
 import main.serializers as MainSerializers
+import main.forms as MainForm
 
 class Utf8JSONRenderer(JSONRenderer):
     charset = 'utf-8'
@@ -270,14 +271,19 @@ class ModelViewSet(viewsets.ModelViewSet, ViewHelper):
         serializer = MainSerializers.VehicleModelSellSerializer(queryset, many=True)
         return Response(serializer.data)
 
-# class StaffSigup(views.APIView):
-#     permission_classes = [AllowAny]
-#     def post(self, request):
-#         staff = StaffCreationForm(request.data)
-#         if staff.is_valid():
-#             staff.save()
-#             return Response('ok')
-#         return Response(staff.errors, status=400)
+class ClientSignUp(views.APIView):
+    permission_classes = [permissions.AllowAny,]
+    renderer_classes = (Utf8JSONRenderer,)
+    
+    def post(self, request):
+        print(request.data)
+        client = MainForm.ClientCreateForm(request.data)
+
+        if client.is_valid():
+            client.save()
+            return Response('ok')
+        
+        return Response(client.errors)
 
 class UpLoadFile(views.APIView):
 

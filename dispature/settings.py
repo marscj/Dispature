@@ -60,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 ]
 
 REST_FRAMEWORK = {
@@ -144,14 +145,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-us' #'zh-Hans'
 
 TIME_ZONE = 'Asia/Dubai'
 # TIME_ZONE = 'UTC'
 
-USE_I18N = False
+USE_I18N = True
 
-USE_L10N = False
+USE_L10N = True
 
 USE_TZ = False 
 
@@ -201,26 +202,6 @@ JET_THEMES = [
         'color': '#44b78b',
         'title': 'Green',
     },
-    # {
-    #     'theme': 'light-green',
-    #     'color': '#2faa60',
-    #     'title': 'Light Green'
-    # },
-    # {
-    #     'theme': 'light-violet',
-    #     'color': '#a464c4',
-    #     'title': 'Light Violet'
-    # },
-    # {
-    #     'theme': 'light-blue',
-    #     'color': '#5EADDE',
-    #     'title': 'Light Blue'
-    # },
-    # {
-    #     'theme': 'light-gray',
-    #     'color': '#222',
-    #     'title': 'Light Gray'
-    # }
 ]
 
 JET_SIDE_MENU_ITEMS = {

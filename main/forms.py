@@ -66,7 +66,6 @@ class ClientCreateForm(UserCreationForm):
         model = MainModel.Client
         fields = ['username', 'password1', 'password2', 'name', 'phone', 'company']
 
-
 class StoreForm(forms.ModelForm):
 
     tel = PhoneNumberField(
