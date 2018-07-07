@@ -152,7 +152,7 @@ TIME_ZONE = 'Asia/Dubai'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = False 
  
@@ -210,20 +210,19 @@ JET_THEMES = [
 
 JET_SIDE_MENU_ITEMS = {
     'admin': [
-        {'label': _('Setting'), 'items': [
-             {'name': 'auth.user'},
-            {'name': 'authtoken.token'},
+        {'label': ('Setting'), 'items': [
+            {'name': 'auth.user'},
         ]},
-        {'label': _('Resources'), 'items': [
+        {'label': ('Resources'), 'items': [
             {'name': 'main.store'},
             {'name': 'main.staff'},
             {'name': 'main.vehicle'},
             {'name': 'main.vehiclemodel'},
         ]},
-        {'label': _('Orders'), 'items': [
+        {'label': ('Orders'), 'items': [
             {'name': 'main.order'},
         ]},
-        {'label': _('Client'), 'items': [
+        {'label': ('Client'), 'items': [
             {'name': 'main.client'},
             {'name': 'main.company'},
             {'name': 'main.accountrecharge'},

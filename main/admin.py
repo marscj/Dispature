@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.contenttypes.admin import GenericTabularInline, GenericStackedInline
 from django.contrib.admin.options import IS_POPUP_VAR
-from django.utils.translation import gettext, gettext_lazy as _
+# from django.utils.translation import gettext, gettext_lazy as _
 
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import Token
@@ -22,18 +22,16 @@ site = BaseAdminSite(name='admin')
 
 site.site_title = 'Dispature'
 site.site_header = 'UBang Dispature'
-site.register(Token, TokenAdmin)
-site.register(MainModel.User, UserAdmin)
 
 class BaseUserAdmin(UserAdmin):
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
+        (('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
+        (('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
                                        'groups', 'user_permissions'
                                        )}),
-        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+        (('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
 
     list_display = ('username', 'email', 'is_staff')
@@ -55,6 +53,7 @@ class BaseUserAdmin(UserAdmin):
             return True
         return False
 
+site.register(MainModel.User, BaseUserAdmin)
 
 class PermissionAdmin(BaseModelAdmin):
     readonly_fields = []
@@ -147,7 +146,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin, OrderHelper):
         ],
 
         [
-            _('PersonInfo'), {
+            ('PersonInfo'), {
                 'fields': [
                     'photo',
                     'status',
@@ -159,7 +158,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin, OrderHelper):
             }
         ],
         [
-            _('Permissions'), {
+            ('Permissions'), {
                 'fields': [
                     'is_active',
                     'is_staff',
@@ -170,7 +169,7 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin, OrderHelper):
 
     add_fieldsets = [
         [
-            _('General *'), {
+            ('General *'), {
                 'classes': ('wide',),
                 'fields': [
                     'username',
@@ -269,7 +268,7 @@ class VehicleAdmin(PermissionAdmin, OrderHelper):
 
     fieldsets = [
         [
-            _('General *'), {
+            ('General *'), {
                 'fields': [
                     'eng_no',
                     'chassis_no',
@@ -616,7 +615,7 @@ class ClientAdmin(BaseUserAdmin, PermissionAdmin):
 
     add_fieldsets = [
         [
-            _('General *'), {
+            ('General *'), {
                 'classes': ('wide',),
                 'fields': [
                     'username',
