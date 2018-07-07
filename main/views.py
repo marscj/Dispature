@@ -1,6 +1,8 @@
 from django.utils.crypto import get_random_string
+from django.utils.translation import ugettext as _
 from django.core.files.base import ContentFile
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, password_validation
+from django.core.exceptions import ValidationError
 
 from rest_framework import views, generics, viewsets
 from rest_framework.decorators import action
@@ -9,6 +11,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
 from rest_framework import authentication, permissions
+from rest_framework import serializers
 import rest_framework.filters as filters
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -28,7 +31,11 @@ class LogInView(ObtainAuthToken):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
 
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True) #
+        except serializers.ValidationError:
+            return Response(_('Unable to log in with provided credentials.'), status=400)
+
         user = serializer.validated_data['user']
         
         token, created = Token.objects.get_or_create(user=user)
@@ -74,11 +81,16 @@ class ResetPassword(views.APIView):
         user = authenticate(username=username, password=oldPassword)
         if user is not None:
             if user.is_active:
-                user.set_password(newPassword)
-                user.save()
-                return Response({'code': 0, 'result':'ok'})
-            
-        return Response({'code': 1, 'result':'error'})
+                if newPassword:
+                    try:
+                        password_validation.validate_password(newPassword, user)
+                        user.set_password(newPassword)
+                        user.save()
+                        return Response('ok')
+                    except ValidationError as error:
+                        return Response(error.messages[0], status=400)
+                    
+        return Response(_('Unable to reset password with provided credentials.'), status=400)
 
 class BindCompany(views.APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -105,14 +117,14 @@ class BindCompany(views.APIView):
                     company.verify = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
                     company.save()
                 else:
-                    return Response({'code': 2, 'result':'verify error'})
+                    return Response(_('verification code erro'), status=400)
             except Exception:
-                return Response({'code': 1, 'result':'name error'})
+                return Response(_('can\'t find the company'), status=400)
 
             client = MainSerializers.CompanySerializer(company)
-            return Response({'code': 0, 'result': client.data})
+            return Response(client.data)
         else:
-            return Response({'code': 3, 'result':'parameter error'})
+            return Response(_('parameter error'), status=400)
 
 class UnBindCompany(views.APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -137,13 +149,13 @@ class UnBindCompany(views.APIView):
                     unbindUser.company = None
                     unbindUser.save()
                     company = MainSerializers.ClientMiniSerializer(user.company.client, many=True)
-                    return Response({'code': 0, 'result': company.data})
+                    return Response(company.data)
                 else :
-                    return Response({'code': 1, 'result': 'can not delete admin'})
+                    return Response(_('can not delete admin'), status=400)
             else :
-                return Response({'code': 2, 'result': 'Authentication credentials were not provided.'})
+                return Response(_('permission denied.'), status=400)
         else :
-            return Response({'code': 3, 'result': 'you dont have company'})
+            return Response(_('you dont have company'), status=400)
 
 class CompanyView(views.APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -158,9 +170,9 @@ class CompanyView(views.APIView):
 
         if user.company is not None:
             company = MainSerializers.CompanySerializer(user.company)
-            return Response({'result': company.data})
+            return Response(company.data)
         else :
-            return Response({'result': None})
+            return Response(status=400)
 
 class CompanyClientView(views.APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -175,9 +187,9 @@ class CompanyClientView(views.APIView):
 
         if user.company is not None:
             client = MainSerializers.ClientMiniSerializer(user.company.client, many=True)
-            return Response({'result': client.data})
+            return Response(client.data)
         else :
-            return Response({'result': None})
+            return Response(status=400)
 
 class AccountDetailViewSet(viewsets.ModelViewSet):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -276,14 +288,13 @@ class ClientSignUp(views.APIView):
     renderer_classes = (Utf8JSONRenderer,)
     
     def post(self, request):
-        print(request.data)
         client = MainForm.ClientCreateForm(request.data)
 
         if client.is_valid():
             client.save()
             return Response('ok')
         
-        return Response(client.errors)
+        return Response(client.errors, status=400)
 
 class UpLoadFile(views.APIView):
 
