@@ -56,17 +56,17 @@ class OrderHelper(object):
     def get_amount(self, order_type, store, model=None):
         
         if order_type == 0:
-            return model.daily_charge, model.premium_charge, store.home_service_charge
+            return round(model.daily_charge, 2), round(model.premium_charge, 2), round(store.home_service_charge, 2), round(store.service_charge, 2)
 
         elif order_type == 4:
-            return model.special_daily_charge
+            return round(model.special_daily_charge, 2)
         
         elif order_type == 1:
-            return store.driver_daily_charge
+            return round(store.driver_daily_charge, 2)
 
         elif order_type == 2:
-            return store.tourguide_daily_charge
+            return round(store.tourguide_daily_charge, 2)
         
         elif order_type == 3:
-            return store.dt_daily_charge
+            return round(store.dt_daily_charge, 2)
 

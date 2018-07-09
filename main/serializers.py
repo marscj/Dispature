@@ -117,18 +117,33 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     #     return obj.company.balance
 
 class Settlement(object):
-    def __init__(self, start_time, end_time, order_type, amount, total, discount, premium_charge=None, service_charge=None, service_type=None, staff=None, model=None):
+    def __init__(self, start_time, end_time, order_type, discount, store):
         self.start_time = start_time
         self.end_time = end_time
         self.order_type = order_type
-        self.service_type = service_type
-        self.staff = staff
-        self.model = model
-        self.amount = amount
-        self.total = total
         self.discount = discount
-        self.premium_charge = premium_charge
-        self.service_charge = service_charge 
+        self.store = store
+
+    # def __init__(self, start_time, end_time, order_type, amount, total, discount, store, staff=None, model=None, service_type=None, premium_charge=None, service_charge=None, home_service_charge=None, pick_up_addr=None, drop_off_addr=None):
+    #     self.start_time = start_time
+    #     self.end_time = end_time
+    #     self.order_type = order_type
+    #     self.amount = amount
+    #     self.total = total
+    #     self.discount = discount
+    #     self.store = store
+
+        
+    #     self.staff = staff
+    #     self.model = model
+        
+    #     self.service_type = service_type
+    #     self.premium_charge = premium_charge
+    #     self.service_charge = service_charge 
+    #     self.home_service_charge = home_service_charge
+        
+    #     self.pick_up_addr = pick_up_addr
+    #     self.drop_off_addr = drop_off_addr
 
 class SettlementSerializer(serializers.Serializer):
 
@@ -138,9 +153,13 @@ class SettlementSerializer(serializers.Serializer):
     amount = serializers.FloatField()
     total = serializers.FloatField()
     discount = serializers.FloatField()
+    store = StoreSerializer()
     
-    service_type = serializers.IntegerField(required=False, allow_null=True)
     staff = StaffSerializer(required=False, allow_null=True)
     model = VehicleModelSerializer(required=False, allow_null=True)
+    service_type = serializers.IntegerField(required=False, allow_null=True)
     premium_charge = serializers.FloatField(required=False, allow_null=True)
     service_charge = serializers.FloatField(required=False, allow_null=True)
+    home_service_charge = serializers.FloatField(required=False, allow_null=True)
+    pick_up_addr = serializers.CharField(required=False, allow_null=True, max_length=128)
+    drop_off_addr = serializers.CharField(required=False, allow_null=True, max_length=128)
