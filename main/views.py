@@ -20,11 +20,14 @@ from main.view_helper import ViewHelper
 import main.models as MainModel
 import main.serializers as MainSerializers
 import main.forms as MainForm
+from main.order_helper import OrderHelper
+from .utils import Tools
+from datetime import datetime
 
 class Utf8JSONRenderer(JSONRenderer):
     charset = 'utf-8'
 
-class LogInView(ObtainAuthToken):
+class SignInView(ObtainAuthToken):
     renderer_classes = (Utf8JSONRenderer,)
 
     def post(self, request, *args, **kwargs):
@@ -67,6 +70,20 @@ class LogInView(ObtainAuthToken):
             pass
         
         return Response({'token': token.key})
+
+
+class ClientSignUp(views.APIView):
+    permission_classes = [permissions.AllowAny,]
+    renderer_classes = (Utf8JSONRenderer,)
+    
+    def post(self, request):
+        client = MainForm.ClientCreateForm(request.data)
+
+        if client.is_valid():
+            client.save()
+            return Response('ok')
+        
+        return Response(client.errors, status=400)
 
 class ResetPassword(views.APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -117,14 +134,14 @@ class BindCompany(views.APIView):
                     company.verify = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
                     company.save()
                 else:
-                    return Response(_('verification code erro'), status=400)
+                    return Response(_('Verification code erro.'), status=400)
             except Exception:
-                return Response(_('can\'t find the company'), status=400)
+                return Response(_('Can\'t find the company.'), status=400)
 
             client = MainSerializers.CompanySerializer(company)
             return Response(client.data)
         else:
-            return Response(_('parameter error'), status=400)
+            return Response(_('Parameter error.'), status=400)
 
 class UnBindCompany(views.APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -151,11 +168,11 @@ class UnBindCompany(views.APIView):
                     company = MainSerializers.ClientMiniSerializer(user.company.client, many=True)
                     return Response(company.data)
                 else :
-                    return Response(_('can not delete admin'), status=400)
+                    return Response(_('Can\'t delete admin.'), status=400)
             else :
-                return Response(_('permission denied.'), status=400)
+                return Response(_('Permission denied.'), status=400)
         else :
-            return Response(_('you dont have company'), status=400)
+            return Response(_('You are not a business user.'), status=400)
 
 class CompanyView(views.APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -190,6 +207,71 @@ class CompanyClientView(views.APIView):
             return Response(client.data)
         else :
             return Response(status=400)
+
+class SettlementView(views.APIView, OrderHelper):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    def get(self, request):
+        start_time = self.request.query_params.get('start_time')
+        end_time = self.request.query_params.get('end_time')
+        order_type = self.request.query_params.get('order_type')
+
+        staff = self.request.query_params.get('staff')
+        store = self.request.query_params.get('store')
+        model = self.request.query_params.get('model')
+        service_type = self.request.query_params.get('service_type')
+
+        try:
+            user = request.user.client
+        except Exception:
+            return Response(status=404)
+
+        duration = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")  - datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+
+        if user.company is None:
+            return Response(_('You are not a business user.'), status=400)
+
+        if start_time > end_time:
+            return Response(_('End time must be later than start time.'), status=400)
+        
+        if duration.days * 24 * 3600 + duration.seconds < 3600:
+            return Response(_('Duration is too short.'), status=400)
+
+        store_queryset = MainModel.Store.objects.get(pk=int(store))
+        days = Tools.convert_timedelta(duration)
+
+        if int(order_type) == 0:
+            model_queryset = MainModel.VehicleModel.objects.get(pk=int(model))
+            amount, premium_charge, service_charge = self.get_amount(int(order_type), store_queryset, model_queryset)
+            
+            if service_type is not None and int(service_type) == 1:
+                total = ((amount + premium_charge + service_charge) * days) * (1 - user.company.discount)
+                settle = MainSerializers.Settlement(start_time=start_time, end_time=end_time, order_type=order_type, service_type=int(service_type), amount=amount, total=total, discount=user.company.discount, premium_charge=premium_charge, service_charge=service_charge, model=model_queryset)
+            else:
+                total = ((amount + premium_charge) * days) * (1 - user.company.discount)
+                settle = MainSerializers.Settlement(start_time=start_time, end_time=end_time, order_type=order_type, service_type=0, amount=amount, total=total, discount=user.company.discount, premium_charge=premium_charge, model=model_queryset)
+
+            order = MainSerializers.SettlementSerializer(settle)
+            return Response(order.data)
+
+        elif int(order_type) == 4:
+            staff_queryset = MainModel.Staff.objects.get(pk=int(staff))
+            amount = self.get_amount(int(order_type), store_queryset, staff_queryset.model)
+            total = amount * days * (1 - user.company.discount)
+            settle = MainSerializers.Settlement(start_time=start_time, end_time=end_time, order_type=order_type, amount=amount, total=total, discount=user.company.discount, staff=staff_queryset, model=staff_queryset.model)
+            order = MainSerializers.SettlementSerializer(settle)
+            return Response(order.data)
+
+        else:
+            staff_queryset = MainModel.Staff.objects.get(pk=int(staff))
+            amount = self.get_amount(int(order_type), store_queryset, None)
+            total = amount * days * (1 - user.company.discount)
+            settle = MainSerializers.Settlement(start_time=start_time, end_time=end_time, order_type=order_type, amount=amount, total=total, discount=user.company.discount, staff=staff_queryset)
+            order = MainSerializers.SettlementSerializer(settle)
+            return Response(order.data)
+
 
 class AccountDetailViewSet(viewsets.ModelViewSet):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -282,19 +364,6 @@ class ModelViewSet(viewsets.ModelViewSet, ViewHelper):
         queryset = self.get_queryset()
         serializer = MainSerializers.VehicleModelSellSerializer(queryset, many=True)
         return Response(serializer.data)
-
-class ClientSignUp(views.APIView):
-    permission_classes = [permissions.AllowAny,]
-    renderer_classes = (Utf8JSONRenderer,)
-    
-    def post(self, request):
-        client = MainForm.ClientCreateForm(request.data)
-
-        if client.is_valid():
-            client.save()
-            return Response('ok')
-        
-        return Response(client.errors, status=400)
 
 class UpLoadFile(views.APIView):
 

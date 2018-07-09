@@ -115,3 +115,32 @@ class AccountDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'amount', 'detail_type', 'explanation', 'create_time', 'order', 'company', 'balance']
     # def get_balance(self, obj):
     #     return obj.company.balance
+
+class Settlement(object):
+    def __init__(self, start_time, end_time, order_type, amount, total, discount, premium_charge=None, service_charge=None, service_type=None, staff=None, model=None):
+        self.start_time = start_time
+        self.end_time = end_time
+        self.order_type = order_type
+        self.service_type = service_type
+        self.staff = staff
+        self.model = model
+        self.amount = amount
+        self.total = total
+        self.discount = discount
+        self.premium_charge = premium_charge
+        self.service_charge = service_charge 
+
+class SettlementSerializer(serializers.Serializer):
+
+    start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
+    order_type = serializers.IntegerField()
+    amount = serializers.FloatField()
+    total = serializers.FloatField()
+    discount = serializers.FloatField()
+    
+    service_type = serializers.IntegerField(required=False, allow_null=True)
+    staff = StaffSerializer(required=False, allow_null=True)
+    model = VehicleModelSerializer(required=False, allow_null=True)
+    premium_charge = serializers.FloatField(required=False, allow_null=True)
+    service_charge = serializers.FloatField(required=False, allow_null=True)

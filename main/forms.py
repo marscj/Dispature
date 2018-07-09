@@ -215,7 +215,6 @@ class OrderCreateForm(OrderBaseForm):
     def get_amount(self, duration, order_type, store, company, staff=None, vehicle=None, service_type=0):
 
         days = Tools.convert_timedelta(duration)
-        total = 0
         if order_type == 0:
             amount = vehicle.model.daily_charge + vehicle.model.premium_charge
             service = 0 if service_type == 0 else store.home_service_charge
@@ -233,7 +232,7 @@ class OrderCreateForm(OrderBaseForm):
             amount = store.tourguide_daily_charge
             total = amount * days
         
-        elif order_type == 2:
+        elif order_type == 3:
             amount = store.dt_daily_charge
             total = amount * days
         

@@ -188,7 +188,7 @@ class Order(models.Model):
     orderId = models.CharField(max_length=32, unique=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    duration = models.DurationField(max_length=128, default='')
+    duration = models.DurationField()
     order_type = models.IntegerField(default=0, choices=Constants.ORDER_TYPE)
     order_status = models.IntegerField(default=0, choices=Constants.ORDER_STATUS)
     pay_status = models.IntegerField(default=0, choices=Constants.PAY_STATUS)

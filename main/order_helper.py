@@ -53,3 +53,20 @@ class OrderHelper(object):
             query.save()
             MainModel.AccountDetail.objects.create(amount=query.amount, detail_type=2, order=order, company=order.company, balance=order.company.balance)
 
+    def get_amount(self, order_type, store, model=None):
+        
+        if order_type == 0:
+            return model.daily_charge, model.premium_charge, store.home_service_charge
+
+        elif order_type == 4:
+            return model.special_daily_charge
+        
+        elif order_type == 1:
+            return store.driver_daily_charge
+
+        elif order_type == 2:
+            return store.tourguide_daily_charge
+        
+        elif order_type == 3:
+            return store.dt_daily_charge
+
