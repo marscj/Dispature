@@ -24,4 +24,5 @@ urlpatterns = [
     url(r'^company/', View.CompanyView.as_view()),
     url(r'^company-client/', View.CompanyClientView.as_view()),
     url(r'^settle/', View.SettlementView.as_view()),
+    url(r'^order-create/', View.OrderCreateView.as_view()),
 ] + router.urls

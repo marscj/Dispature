@@ -15,10 +15,10 @@ class OrderHelper(object):
 
         return queryset
 
-    def order_queryset(self, orderType, start_time, end_time, orderId=None):
+    def order_queryset(self, orderType, start_time, end_time, orderId=None, model=None):
 
         if orderType == '0': 
-            return self._queryset(orderId, start_time, end_time, MainModel.Vehicle.objects.filter(status=1))
+            return self._queryset(orderId, start_time, end_time, MainModel.Vehicle.objects.filter(status=1,model=model))
         elif orderType == '1':
             return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True, model=None))
         elif orderType == '2':

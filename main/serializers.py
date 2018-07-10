@@ -60,7 +60,7 @@ class StaffSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainModel.Staff
-        fields = ['userId', 'name', 'phone', 'photo', 'status', 'accept', 'dli', 'tli', 'ppi', 'store', 'model',
+        fields = ['id', 'userId', 'name', 'phone', 'photo', 'status', 'accept', 'dli', 'tli', 'ppi', 'store', 'model',
                   'driver', 'tourguide']
 
 class ClientMiniSerializer(serializers.ModelSerializer):
@@ -123,27 +123,6 @@ class Settlement(object):
         self.order_type = order_type
         self.discount = discount
         self.store = store
-
-    # def __init__(self, start_time, end_time, order_type, amount, total, discount, store, staff=None, model=None, service_type=None, premium_charge=None, service_charge=None, home_service_charge=None, pick_up_addr=None, drop_off_addr=None):
-    #     self.start_time = start_time
-    #     self.end_time = end_time
-    #     self.order_type = order_type
-    #     self.amount = amount
-    #     self.total = total
-    #     self.discount = discount
-    #     self.store = store
-
-        
-    #     self.staff = staff
-    #     self.model = model
-        
-    #     self.service_type = service_type
-    #     self.premium_charge = premium_charge
-    #     self.service_charge = service_charge 
-    #     self.home_service_charge = home_service_charge
-        
-    #     self.pick_up_addr = pick_up_addr
-    #     self.drop_off_addr = drop_off_addr
 
 class SettlementSerializer(serializers.Serializer):
 
