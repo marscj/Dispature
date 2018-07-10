@@ -241,32 +241,31 @@ class SettlementView(views.APIView, OrderHelper):
 
         days = Tools.convert_timedelta(duration)
         settle = MainSerializers.Settlement(start_time, end_time, order_type, user.company.discount, store)
+        settle.remake = request.data.get('remake')
         
         if order_type == 0:
             model = get_object_or_404(MainModel.VehicleModel, pk=request.data.get('model').get('id'))
             service_type = request.data.get('service_type')
-            amount, premium_charge, home_service_charge, service_charge = self.get_amount(order_type, store, model)
+            total, amount, premium_charge, service_charge, home_service_charge = self.get_order_charge(order_type, days, store, model, user.company.discount, service_type=service_type)
             
+            settle.amount = amount
+            settle.total = total
             settle.model = model
             settle.service_type = service_type
-            
-            settle.amount = amount * days 
             settle.service_charge = service_charge
             settle.premium_charge = premium_charge * days
 
-            if service_type is not None and service_type == 0:
-                settle.total = round(((amount + premium_charge) * days + service_charge) * (1 - user.company.discount), 2)
-            else:
+            if service_type == 1:
                 settle.home_service_charge = home_service_charge
                 settle.pick_up_addr = request.data.get('pick_up_addr')
                 settle.drop_off_addr = request.data.get('drop_off_addr')
-                settle.total = round(((amount + premium_charge) * days + service_charge + home_service_charge) * (1 - user.company.discount), 2)
 
         else:
             staff = get_object_or_404(MainModel.Staff, pk=request.data.get('staff').get('userId'))
-            amount = self.get_amount(order_type, store, model=staff.model)
-            settle.amount= amount * days
-            settle.total = round(amount * days * (1 - user.company.discount), 2)
+            total, amount = self.get_order_charge(order_type, days, store, staff.model, user.company.discount)
+
+            settle.amount= amount
+            settle.total = total
             settle.staff = staff
             
         _settle = MainSerializers.SettlementSerializer(settle)
@@ -276,15 +275,6 @@ class OrderCreateView(views.APIView, OrderHelper):
     authentication_classes = (authentication.TokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
     renderer_classes = (Utf8JSONRenderer,)
-
-    def create_account_detail(self, order, amount):
-        if order.company is not None:
-            if order.company.balance - amount < 0:
-                return Response(_('The company no balance'), status=400)
-
-            order.company.balance = order.company.balance - amount
-            order.company.save()
-            MainModel.AccountDetail.objects.create(amount=amount, detail_type=1, order=order, company=order.company, balance=order.company.balance)
 
     def post(self, request):
         
@@ -296,6 +286,7 @@ class OrderCreateView(views.APIView, OrderHelper):
         start_time = request.data.get('start_time')
         end_time = request.data.get('end_time')
         order_type = request.data.get('order_type')
+        remake = request.data.get('remake')
         store = get_object_or_404(MainModel.Store, pk=request.data.get('store').get('id'))
 
         duration = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")  - datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
@@ -310,55 +301,128 @@ class OrderCreateView(views.APIView, OrderHelper):
             return Response(_('Duration is too short.'), status=400)
 
         days = Tools.convert_timedelta(duration)
-        order = MainModel.Order.objects.create(
-            orderId=datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f"),
-            start_time=start_time, 
-            end_time=end_time, 
-            duration=duration,
-            order_type=order_type, 
-            order_status=0,
-            pay_status=0,
-            client=user,
-            company=user.company,
-            store=store)
         
         if order_type == 0:
-            model = get_object_or_404(MainModel.VehicleModel, pk=request.data.get('model').get('id'))
             service_type = request.data.get('service_type')
-            amount, premium_charge, home_service_charge, service_charge = self.get_amount(order_type, store, model)
-            
-            order.service_type = service_type
-
+            model = get_object_or_404(MainModel.VehicleModel, pk=request.data.get('model').get('id'))
             order_query = self.order_queryset(order_type, start_time, end_time, model=model.model)
-            if order_query.count == 0:
-                return Response(_('It is out of stock.'), status=400)
-            else:
-                order.vehicle=order_query[0]
             
-            if service_type is not None and service_type == 0:
-                total = round(((amount + premium_charge) * days + service_charge) * (1 - user.company.discount), 2)
-                self.create_account_detail(order, total)
+            if order_query is None or order_query.count() == 0:
+                return Response(_('It is out of stock.'), status=400)
+            
+            total, amount, premium_charge, service_charge, home_service_charge = self.get_order_charge(order_type, days, store, model, user.company.discount, service_type=service_type)
+            
+            if user.company.balance - total < 0:
+                    return Response(_('The company no balance'), status=400)
+
+            if service_type == 0:
+                order = MainModel.Order.objects.create(
+                    orderId=self.create_order_id(),
+                    start_time=start_time, 
+                    end_time=end_time, 
+                    duration=duration,
+                    order_type=order_type, 
+                    order_status=0,
+                    pay_status=1,
+                    remake=remake,
+                    service_type=service_type,
+                    client=user,
+                    vehicle=order_query[0],
+                    company=user.company,
+                    store=store)
             else:
-                order.pick_up_addr = request.data.get('pick_up_addr')
-                order.drop_off_addr = request.data.get('drop_off_addr')
-                total = round(((amount + premium_charge) * days + service_charge + home_service_charge) * (1 - user.company.discount), 2)
-                self.create_account_detail(order, total)
+                order = MainModel.Order.objects.create(
+                    orderId=self.create_order_id(),
+                    start_time=start_time, 
+                    end_time=end_time, 
+                    duration=duration,
+                    order_type=order_type, 
+                    order_status=0,
+                    pay_status=1,
+                    remake=remake,
+                    service_type=1,
+                    pick_up_addr=request.data.get('pick_up_addr'),
+                    drop_off_addr=request.data.get('drop_off_addr'),
+                    client=user,
+                    vehicle=order_query[0],
+                    company=user.company,
+                    store=store)
+
+            self.create_account_detail(total, 1, order, user.company)
 
         else:
             staff = get_object_or_404(MainModel.Staff, pk=request.data.get('staff').get('userId'))
 
             if self.order_staff_exsit(start_time, end_time, staff):
                 return Response(_('Staff is busy.'), status=400)
+                
+            total, amount = self.get_order_charge(order_type, days, store, staff.model, user.company.discount)
+            
+            if user.company.balance - total < 0:
+                return Response(_('The company no balance'), status=400)
+            
+            order = MainModel.Order.objects.create(
+                orderId=self.create_order_id(),
+                start_time=start_time, 
+                end_time=end_time, 
+                duration=duration,
+                order_type=order_type, 
+                order_status=0,
+                pay_status=1,
+                remake=remake,
+                client=user,
+                staff=staff,
+                staff_status=0,
+                company=user.company,
+                store=store)
 
-            amount = self.get_amount(order_type, store, model=staff.model)
-            total = round(amount * days * (1 - user.company.discount), 2)
-            self.create_account_detail(order, total)
-            order.staff = staff
-            order.staff_status = 0
+            self.create_account_detail(total, 1, order, user.company)
         
         order.save()
         _order = MainSerializers.OrderSerializer(order)
         return Response(_order.data)
+
+class OrderCancelView(views.APIView, OrderHelper):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    def get(self, request, pk=None):
+       
+        try:
+            order = MainModel.Order.objects.get(pk=pk)
+        except order.DoesNotExist:
+            return Response(status=404)
+        
+        if (order.end_time - datetime.now()).days > 2:
+            order.order_status = 1
+            order.pay_status = 2
+            order.save()
+        else:
+            return Response(_('Failure, need to cancel 2 days in advance'), status=400)
+        
+        serializer = MainSerializers.OrderSerializer(order)
+        return Response(serializer.data)
+
+class OrderRemarkView(views.APIView, OrderHelper):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    def post(self, request, pk=None):
+       
+        try:
+            order = MainModel.Order.objects.get(pk=pk)
+        except order.DoesNotExist:
+            return Response(status=404)
+        
+        remark = request.data.get('remark')
+        
+        order.remake = remark
+        order.save()
+        
+        serializer = MainSerializers.OrderSerializer(order)
+        return Response(serializer.data)
 
 class AccountDetailViewSet(viewsets.ModelViewSet):
     authentication_classes = (authentication.TokenAuthentication,)

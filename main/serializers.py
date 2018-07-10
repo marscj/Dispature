@@ -142,3 +142,4 @@ class SettlementSerializer(serializers.Serializer):
     home_service_charge = serializers.FloatField(required=False, allow_null=True)
     pick_up_addr = serializers.CharField(required=False, allow_null=True, max_length=128)
     drop_off_addr = serializers.CharField(required=False, allow_null=True, max_length=128)
+    remake = serializers.CharField(required=False, allow_null=True, max_length=256)

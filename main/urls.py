@@ -25,4 +25,6 @@ urlpatterns = [
     url(r'^company-client/', View.CompanyClientView.as_view()),
     url(r'^settle/', View.SettlementView.as_view()),
     url(r'^order-create/', View.OrderCreateView.as_view()),
+    url(r'^order-cancel/(?P<pk>[0-9]+)/$', View.OrderCancelView.as_view()),
+    url(r'^order-remark/(?P<pk>[0-9]+)/$', View.OrderRemarkView.as_view()),
 ] + router.urls

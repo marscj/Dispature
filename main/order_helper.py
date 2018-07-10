@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.db.models import Count
 
 import main.models as MainModel
+from datetime import datetime
 
 class OrderHelper(object):
 
@@ -17,15 +18,15 @@ class OrderHelper(object):
 
     def order_queryset(self, orderType, start_time, end_time, orderId=None, model=None):
 
-        if orderType == '0': 
-            return self._queryset(orderId, start_time, end_time, MainModel.Vehicle.objects.filter(status=1,model=model))
-        elif orderType == '1':
+        if orderType == 0: 
+            return self._queryset(orderId, start_time, end_time, MainModel.Vehicle.objects.filter(status=1, model__model=model))
+        elif orderType == 1:
             return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True, model=None))
-        elif orderType == '2':
+        elif orderType == 2:
             return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, tourguide=True, model=None))
-        elif orderType == '3':
+        elif orderType == 3:
             return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, tourguide=True, driver=True, model=None))
-        elif orderType == '4': 
+        elif orderType == 4: 
             return self._queryset(orderId, start_time, end_time, MainModel.Staff.objects.filter(status=1, is_active=True, accept=True, driver=True).exclude(model=None))
     
     def order_staff_exsit(self, start_time, end_time, staff, orderId=None):
@@ -43,20 +44,22 @@ class OrderHelper(object):
             ).aggregate(count=Count('vehicle'))
         return count['count'] > 0
 
-    def refund(self, order):
+    def get_refund_amount(self, order):
         query_set = MainModel.AccountDetail.objects.filter(order=order, status=True).filter(Q(detail_type=1) | Q(detail_type=3))
 
+        amount = 0
+
         for query in query_set:
-            order.company.balance = order.company.balance + query.amount
-            order.company.save()
+            amount = amount + query.amount
             query.status = False
             query.save()
-            MainModel.AccountDetail.objects.create(amount=query.amount, detail_type=2, order=order, company=order.company, balance=order.company.balance)
+
+        return amount
 
     def get_amount(self, order_type, store, model=None):
         
         if order_type == 0:
-            return round(model.daily_charge, 2), round(model.premium_charge, 2), round(store.home_service_charge, 2), round(store.service_charge, 2)
+            return round(model.daily_charge, 2), round(model.premium_charge, 2), round(store.service_charge, 2), round(store.home_service_charge, 2)
 
         elif order_type == 4:
             return round(model.special_daily_charge, 2)
@@ -69,4 +72,27 @@ class OrderHelper(object):
         
         elif order_type == 3:
             return round(store.dt_daily_charge, 2)
+
+    def create_account_detail(self, amount, detail_type, order, company):
+        
+        if detail_type == 0 or detail_type ==2:
+            company.balance = round(company.balance + amount, 2)
+        else:
+            company.balance = round(company.balance - amount, 2)
+
+        company.save()
+        MainModel.AccountDetail.objects.create(amount=amount, detail_type=detail_type, order=order, company=company, balance=company.balance)
+
+    def create_order_id(self):
+        return datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+
+    def get_order_charge(self, order_type, days, store, model, discount, service_type=None):
+        if order_type == 0:
+            amount, premium_charge, service_charge, home_service_charge = self.get_amount(order_type, store, model)
+            return round(((amount + premium_charge) * days + service_charge + home_service_charge) * (1 - discount), 2), amount * days, premium_charge, service_charge, home_service_charge
+        else:
+            amount= self.get_amount(order_type, store, model)
+            return round(amount * days * (1 - discount), 2), amount * days
+
+        
 

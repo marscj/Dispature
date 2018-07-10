@@ -115,12 +115,12 @@ class CompanyForm(forms.ModelForm):
             if admin.company:
                 if admin.company.name != name:
                     raise ValidationError(
-                        '%s is not this company' % admin.name)
+                        '%s is not this company.' % admin.name)
             else:
-                raise ValidationError('%s is personal' % admin.name)
+                raise ValidationError('%s is personal.' % admin.name)
         return admin
 
-class AccountRechargeCreateForm(forms.ModelForm):
+class AccountRechargeCreateForm(forms.ModelForm, OrderHelper):
     
     class Meta:
         model = MainModel.AccountRecharge
@@ -130,19 +130,15 @@ class AccountRechargeCreateForm(forms.ModelForm):
         amount = self.cleaned_data.get('amount')
         
         if amount <= 0:
-            raise ValidationError('Enter a number')
+            raise ValidationError('Enter a number.')
 
         return amount
 
-    def create_detail(self, account):
-        account.company.balance = account.company.balance + account.amount
-        account.company.save()
-        MainModel.AccountDetail.objects.create(amount=account.amount, detail_type=0, order=None, company=account.company, balance=account.company.balance)
-
     def save(self, commit=True):
         account = super().save(commit=False)
-        
-        self.create_detail(account)
+
+        self.create_account_detail(account.amount, 0, None, account.company)
+        account.balance = account.company.balance
         account.save()
         return account
 
@@ -171,10 +167,10 @@ class OrderBaseForm(forms.ModelForm, OrderHelper):
 
         if order_type == 0:
             if vehicle is None:
-                raise ValidationError('This field is required')
+                raise ValidationError('This field is required.')
             elif start_time is not None and end_time is not None:
                 if self.order_vehicle_exsit(start_time, end_time, vehicle):
-                    raise ValidationError('vehicle is busy')
+                    raise ValidationError('vehicle is busy.')
 
         return vehicle
 
@@ -188,61 +184,21 @@ class OrderBaseForm(forms.ModelForm, OrderHelper):
             duration = end_time - start_time
 
             if start_time > end_time:
-                raise ValidationError('The end time must be after start time')
+                raise ValidationError('The end time must be after start time.')
             
             if duration.days * 24 * 3600 + duration.seconds < 3600:
-                raise ValidationError('The duration is too short')
+                raise ValidationError('The duration is too short.')
 
         return clean_data
 
-class OrderCreateForm(OrderBaseForm):
+class OrderCreateForm(OrderBaseForm, OrderHelper):
 
     staff_status = forms.ChoiceField(required=True, choices=Constants.CREATE_STAFF_STATUS)
     service_type = forms.ChoiceField(required=True, choices=Constants.SERVICE_TYPE)
 
     class Meta:
         model = MainModel.Order
-        fields = '__all__'
-    
-    def initOrderId(self):
-        now = datetime.datetime.now()
-        start_time = datetime.datetime(now.year, now.month, now.day, 0, 0, 0)
-        end_time = datetime.datetime(now.year, now.month, now.day, 23, 59, 59)
-        count = MainModel.Order.objects.filter(create_time__range=(start_time, end_time)).count()
-        count = 1 if count == 0 else count + 1
-        return '%s-%04d' % (datetime.datetime.now().strftime('%Y-%m-%d'), count)
-
-    def get_amount(self, duration, order_type, store, company, staff=None, vehicle=None, service_type=0):
-
-        days = Tools.convert_timedelta(duration)
-        if order_type == 0:
-            amount = vehicle.model.daily_charge + vehicle.model.premium_charge
-            service = 0 if service_type == 0 else store.home_service_charge
-            total = (amount * days) + store.service_charge + service
-
-        elif order_type == 4:
-            amount = staff.model.special_daily_charge
-            total = amount * days
-        
-        elif order_type == 1:
-            amount = store.driver_daily_charge
-            total = amount * days
-
-        elif order_type == 2:
-            amount = store.tourguide_daily_charge
-            total = amount * days
-        
-        elif order_type == 3:
-            amount = store.dt_daily_charge
-            total = amount * days
-        
-        return total * (1 - company.discount)
-
-    def create_detail(self, order, amount):
-        if order.company is not None:
-            order.company.balance = order.company.balance - amount
-            order.company.save()
-            MainModel.AccountDetail.objects.create(amount=amount, detail_type=1, order=order, company=order.company, balance=order.company.balance)    
+        fields = '__all__'    
 
     def clean_client(self):
         client = self.cleaned_data.get('client')
@@ -255,30 +211,29 @@ class OrderCreateForm(OrderBaseForm):
 
         if client is not None:
             if client.company is None:
-                raise ValidationError('client is not a company user')        
+                raise ValidationError('Client is not a company user.')        
 
         if start_time is not None and end_time is not None:
-            duration = end_time - start_time
-            amount = 0
+            days = Tools.convert_timedelta(end_time - start_time)
 
             if order_type is not None:
                 if order_type == 0:
                     if vehicle is not None and service_type is not None and client is not None:
-                        amount = self.get_amount(duration, order_type, vehicle.model.store, client.company, None, vehicle, service_type)
+                        total, amount, premium_charge, service_charge, home_service_charge = self.get_order_charge(order_type, days, vehicle.store, vehicle.model, client.company.discount, service_type=service_type)
                 else:
                     if staff is not None and client is not None:
-                        amount = self.get_amount(duration, order_type, staff.store, client.company, staff)
+                        total, amount = self.get_order_charge(order_type, days, staff.store, staff.model, client.company.discount)
             
             if client is not None and client.company is not None:
-                if client.company.balance - amount < 0:
-                    raise ValidationError('the company no balance')
+                if client.company.balance - total < 0:
+                    raise ValidationError('The company no balance.')
 
         return client
     
     def save(self, commit=True):
         order = super().save(commit=False)
 
-        order.orderId = self.initOrderId()
+        order.orderId = self.create_order_id()
         order.duration = order.end_time - order.start_time
         order.order_status = 0
         order.pay_status = 1     
@@ -286,16 +241,16 @@ class OrderCreateForm(OrderBaseForm):
         if order.order_type == 0:
             order.staff_status = None
             order.store = order.vehicle.model.store
-            amount = self.get_amount(order.duration, order.order_type, order.store, order.client.company, None, order.vehicle, order.service_type)
+            total, amount, premium_charge, service_charge, home_service_charge = self.get_order_charge(order.order_type, Tools.convert_timedelta(order.duration), order.vehicle.store, order.vehicle.model, order.client.company.discount, service_type=order.service_type)
         else:
             order.service_type = None
             order.store = order.staff.store
-            amount = self.get_amount(order.duration, order.order_type, order.store, order.client.company, order.staff)
+            total, amount = self.get_order_charge(order.order_type, Tools.convert_timedelta(order.duration), order.staff.store, order.staff.model, order.client.company.discount)
 
         order.company = order.client.company
         order.save()
 
-        self.create_detail(order, amount)
+        self.create_account_detail(total, 1, order, order.company)
 
         return order
 
@@ -319,24 +274,14 @@ class OrderfForm(OrderBaseForm):
         elif order.vehicle is not None:
             order.store = order.vehicle.model.store
         
-        if order.order_status == 0:
-            if order.staff_status == 2:
-                order.order_status = 1
-                order.pay_status = 2
-
         if order.order_status == 1:
-            if order.pay_status == 2:
-                order.pay_status = 3
-                order.save()
-                self.refund(order)
-                order.save()
-            else:
+            if order.pay_status == 1:
                 order.pay_status = 2
                 order.save()
         
         return order
 
-class AccountDetailCreateForm(forms.ModelForm):
+class AccountDetailCreateForm(forms.ModelForm, OrderHelper):
     
     detail_type = forms.ChoiceField(required=True, choices=Constants.CREATE_DETAIL_TYPE)
     explanation = forms.CharField(required=True, max_length=128)
@@ -347,20 +292,32 @@ class AccountDetailCreateForm(forms.ModelForm):
 
     def clean_order(self):
         order = self.cleaned_data.get('order')
+        detail_type = self.cleaned_data.get('detail_type')
 
         if order is None:
-            raise ValidationError('This field is required')
+            raise ValidationError('This field is required.')
         else:
-            if order.order_status == 1:
-                raise ValidationError('Order has been cancelled')
+            if detail_type == '2':
+                if order.order_status != 1:
+                    raise ValidationError('Please cancel the order.')
+                elif order.pay_status == 0:
+                    raise ValidationError('Order not paid.')
+                elif order.pay_status == 3:
+                    raise ValidationError('Order has been refunded.')
+            else:
+                if order.order_status == 1:
+                    raise ValidationError('Order has been cancelled.')
             
         return order
 
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
+        detail_type = self.cleaned_data.get('detail_type')
         
-        if amount <= 0:
-            raise ValidationError('Enter a number')
+        if detail_type is not None:
+            if detail_type == 3:
+                if amount <= 0:
+                    raise ValidationError('Enter a number.')
 
         return amount
 
@@ -369,10 +326,12 @@ class AccountDetailCreateForm(forms.ModelForm):
 
         order = clean_data.get('order')
         amount = clean_data.get('amount')
+        detail_type = clean_data.get('detail_type')
 
-        if order is not None and amount is not None:
-            if order.company.balance - amount < 0:
-                raise ValidationError('the company no balance')
+        if detail_type == '3':
+            if order is not None and amount is not None:
+                if order.company.balance - amount < 0:
+                    raise ValidationError('The company no balance.')
 
         return clean_data
 
@@ -381,9 +340,17 @@ class AccountDetailCreateForm(forms.ModelForm):
 
         detail.company = detail.order.company
 
-        if detail.company is not None:
-            detail.company.balance = detail.company.balance - detail.amount
+        if detail.detail_type == 2:
+            detail.amount = self.get_refund_amount(detail.order)
+            detail.company.balance = round(detail.company.balance + detail.amount, 2)
             detail.company.save()
 
+            detail.order.pay_status = 3
+            detail.order.save()
+        else :
+            detail.company.balance = round(detail.company.balance - detail.amount, 2)
+            detail.company.save()
+        
+        detail.balance = detail.order.company.balance
         detail.save()
         return detail

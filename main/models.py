@@ -257,6 +257,7 @@ class AccountRechargeManager(models.Manager):
 
 class AccountRecharge(models.Model):
     amount = models.FloatField(default=0)
+    balance = models.FloatField(editable=False, default=0)
     recharge_type = models.IntegerField(default=0, choices=Constants.RECHARGE_TYPE)
     serial_number = models.SlugField()
     create_time = models.DateTimeField(auto_now_add=True)
@@ -276,7 +277,7 @@ class AccountDetailManager(models.Manager):
 
 class AccountDetail(models.Model):
     amount = models.FloatField(default=0)
-    balance = models.FloatField(editable=False)
+    balance = models.FloatField(editable=False, default=0)
     detail_type = models.IntegerField(default=0, choices=Constants.DETAIL_TYPE)
     status = models.BooleanField(default=True, editable=False)
     explanation = models.CharField(max_length=128, blank=True, null=True)

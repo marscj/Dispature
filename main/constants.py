@@ -66,6 +66,7 @@ DETAIL_TYPE = [
 ]
 
 CREATE_DETAIL_TYPE = [
+    (2, 'Refund'),
     (3, 'Extra'),
 ]
 

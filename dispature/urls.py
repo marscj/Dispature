@@ -2,10 +2,12 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls import url, include
 from django.conf.urls.static import static
+from rest_framework.schemas import get_schema_view
+
 
 # home
 urlpatterns = [
-    url('', include('home.urls'))
+    url('', include('home.urls')),
 ]
 
 # main
@@ -19,10 +21,10 @@ urlpatterns = urlpatterns + [
     url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
 ]
 
-# rest_framework
+# rest_framework 
 if settings.DEBUG:
     urlpatterns = urlpatterns + [
-        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     ]
 
 

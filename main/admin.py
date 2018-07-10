@@ -234,11 +234,11 @@ class StaffAdmin(BaseUserAdmin, PermissionAdmin, OrderHelper):
         
         if IS_POPUP_VAR in request.GET:
             orderId = request.GET.get('order__orderId')
-            orderType = request.GET.get('order__order_type')
+            order_type = request.GET.get('order__order_type')
             start_time = request.GET.get('order__start_time')
             end_time = request.GET.get('order__end_time')
 
-            return self.order_queryset(orderType, start_time, end_time, orderId)
+            return self.order_queryset(int(order_type), start_time, end_time, orderId)
     
         return super().get_queryset(request)
 
@@ -323,11 +323,11 @@ class VehicleAdmin(PermissionAdmin, OrderHelper):
     
         if IS_POPUP_VAR in request.GET:
             orderId = request.GET.get('order__orderId')
-            orderType = request.GET.get('order__order_type')
+            order_type = request.GET.get('order__order_type')
             start_time = request.GET.get('order__start_time')
             end_time = request.GET.get('order__end_time')
 
-            return self.order_queryset(orderType, start_time, end_time, orderId)
+            return self._queryset(orderId, start_time, end_time, MainModel.Vehicle.objects.filter(status=1))
     
         return super().get_queryset(request)
 
@@ -531,6 +531,7 @@ class OrderAdmin(PermissionAdmin):
         'order_type',
         'start_time',
         'end_time',
+        'pay_status',
         # 'service_type',
         # 'staff',
         # 'vehicle',
@@ -544,6 +545,7 @@ class OrderAdmin(PermissionAdmin):
         'company',
         'staff',
         'vehicle',
+        'pay_status',
         'service_type'
     ]
 
@@ -561,10 +563,6 @@ class OrderAdmin(PermissionAdmin):
 
         if obj.order_status != 0:
             _readonly = [f.name for f in self.model._meta.fields] #_readonly + ['order_status']
-
-        if obj.pay_status != 3:
-            if 'pay_status' in _readonly:
-                _readonly.remove('pay_status')
 
         return self.readonly_fields + _readonly
     
@@ -737,6 +735,7 @@ class AccountRechargeAdmin(PermissionAdmin):
     list_display = [
         '__str__',
         'amount',
+        'balance',
         'create_time',
         'recharge_type',
         'serial_number',
@@ -745,6 +744,7 @@ class AccountRechargeAdmin(PermissionAdmin):
     list_display_links = [
         '__str__',
         'amount',
+        'balance',
         'create_time',
         'recharge_type',
         'serial_number',
@@ -752,6 +752,7 @@ class AccountRechargeAdmin(PermissionAdmin):
 
     readonly_fields = [
         'amount',
+        'balance',
         'create_time',
         'recharge_type',
         'serial_number',
@@ -782,10 +783,16 @@ class AccountDetailAdmin(PermissionAdmin):
 
     add_form = MainForm.AccountDetailCreateForm
 
+    class Media:
+        js = [
+            'admin/js/account_detail.js'
+        ]
+
     fields = [
         'create_time',
         'detail_type',
         'amount',
+        'balance',
         'order',
         'company',
         'explanation'
@@ -801,6 +808,7 @@ class AccountDetailAdmin(PermissionAdmin):
     list_display = [
         '__str__',
         'amount',
+        'balance',
         'detail_type',
         'order',
     ]
@@ -808,6 +816,7 @@ class AccountDetailAdmin(PermissionAdmin):
     list_display_links =[
         '__str__',
         'amount',
+        'balance',
         'detail_type',
         'order',
     ]
@@ -815,6 +824,7 @@ class AccountDetailAdmin(PermissionAdmin):
     readonly_fields = [
         'company',
         'amount',
+        'balance',
         'detail_type',
         'order',
         'create_time'
