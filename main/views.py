@@ -488,8 +488,10 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = MainModel.Order.objects.all()
     serializer_class = MainSerializers.OrderSerializer
 
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ['company']
+    ordering = ('order_status', 'start_time')
+
 
 class ModelViewSet(viewsets.ModelViewSet, ViewHelper):
     authentication_classes = (authentication.TokenAuthentication,)

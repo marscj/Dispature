@@ -200,18 +200,19 @@ class OrderCreateForm(OrderBaseForm, OrderHelper):
         model = MainModel.Order
         fields = '__all__'    
 
-    def clean_client(self):
-        client = self.cleaned_data.get('client')
-        start_time = self.cleaned_data.get('start_time')
-        end_time = self.cleaned_data.get('end_time')
-        order_type = self.cleaned_data.get('order_type')
-        staff = self.cleaned_data.get('staff')
-        vehicle = self.cleaned_data.get('vehicle')
-        service_type = self.cleaned_data.get('service_type')
+    def clean(self):
+        clean_data = super().clean()
+        client = clean_data.get('client')
+        start_time = clean_data.get('start_time')
+        end_time = clean_data.get('end_time')
+        order_type = clean_data.get('order_type')
+        staff = clean_data.get('staff')
+        vehicle = clean_data.get('vehicle')
+        service_type = clean_data.get('service_type')
 
         if client is not None:
             if client.company is None:
-                raise ValidationError('Client is not a company user.')        
+                raise ValidationError('Client is not a company user.')
 
         if start_time is not None and end_time is not None:
             days = Tools.convert_timedelta(end_time - start_time)
@@ -219,16 +220,18 @@ class OrderCreateForm(OrderBaseForm, OrderHelper):
             if order_type is not None:
                 if order_type == 0:
                     if vehicle is not None and service_type is not None and client is not None:
-                        total, amount, premium_charge, service_charge, home_service_charge = self.get_order_charge(order_type, days, vehicle.store, vehicle.model, client.company.discount, service_type=service_type)
+                        total, amount, premium_charge, service_charge, home_service_charge = self.get_order_charge(order_type, days, vehicle.model.store, vehicle.model, client.company.discount, service_type=service_type)
+
+                        if client.company.balance - total < 0:
+                            raise ValidationError('The company no balance.')
                 else:
                     if staff is not None and client is not None:
                         total, amount = self.get_order_charge(order_type, days, staff.store, staff.model, client.company.discount)
-            
-            if client is not None and client.company is not None:
-                if client.company.balance - total < 0:
-                    raise ValidationError('The company no balance.')
 
-        return client
+                        if client.company.balance - total < 0:
+                            raise ValidationError('The company no balance.')        
+
+        return clean_data
     
     def save(self, commit=True):
         order = super().save(commit=False)
@@ -241,7 +244,7 @@ class OrderCreateForm(OrderBaseForm, OrderHelper):
         if order.order_type == 0:
             order.staff_status = None
             order.store = order.vehicle.model.store
-            total, amount, premium_charge, service_charge, home_service_charge = self.get_order_charge(order.order_type, Tools.convert_timedelta(order.duration), order.vehicle.store, order.vehicle.model, order.client.company.discount, service_type=order.service_type)
+            total, amount, premium_charge, service_charge, home_service_charge = self.get_order_charge(order.order_type, Tools.convert_timedelta(order.duration), order.vehicle.model.store, order.vehicle.model, order.client.company.discount, service_type=order.service_type)
         else:
             order.service_type = None
             order.store = order.staff.store
