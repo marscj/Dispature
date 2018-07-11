@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-07 16:17+0400\n"
+"POT-Creation-Date: 2018-07-11 15:03+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,79 +18,75 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: dispature/settings.py:213
-msgid "Setting"
-msgstr ""
-
-#: dispature/settings.py:217
-msgid "Resources"
-msgstr ""
-
-#: dispature/settings.py:223
-msgid "Orders"
-msgstr ""
-
-#: dispature/settings.py:226
-msgid "Client"
-msgstr ""
-
-#: main/admin.py:32
-msgid "Personal info"
-msgstr ""
-
-#: main/admin.py:33 main/admin.py:162
-msgid "Permissions"
-msgstr ""
-
-#: main/admin.py:36
-msgid "Important dates"
-msgstr ""
-
-#: main/admin.py:150
-msgid "PersonInfo"
-msgstr ""
-
-#: main/admin.py:173 main/admin.py:272 main/admin.py:619
-msgid "General *"
-msgstr ""
-
-#: main/validators.py:13
-#, python-format
-msgid "the code %(code)s does not exist"
-msgstr ""
-
-#: main/views.py:37
+#: main/views.py:43
 #, fuzzy
 #| msgid "Unable to reset password with provided credentials."
 msgid "Unable to log in with provided credentials."
 msgstr "无法使用提供的凭据登陆."
 
-#: main/views.py:93
+#: main/views.py:113
 msgid "Unable to reset password with provided credentials."
 msgstr "无法使用提供的凭据重置密码."
 
-#: main/views.py:120
-msgid "verification code erro"
+#: main/views.py:140
+#, fuzzy
+#| msgid "verification code erro"
+msgid "Verification code erro."
 msgstr "验证码错误."
 
-#: main/views.py:122
-msgid "can't find the company"
-msgstr "找不到该公司."
-
-#: main/views.py:127
-msgid "parameter error"
-msgstr "参数错误"
-
-#: main/views.py:154
-msgid "can not delete admin"
-msgstr "不能删除管理员."
-
-#: main/views.py:156
-msgid "permission denied."
-msgstr "没有操作权限."
-
-#: main/views.py:158
+#: main/views.py:142
 #, fuzzy
 #| msgid "can't find the company"
-msgid "you dont have company"
-msgstr "你不是公司用户."
+msgid "Can't find the company."
+msgstr "找不到该公司."
+
+#: main/views.py:147
+#, fuzzy
+#| msgid "parameter error"
+msgid "Parameter error."
+msgstr "参数错误"
+
+#: main/views.py:174
+#, fuzzy
+#| msgid "can not delete admin"
+msgid "Can't delete admin."
+msgstr "不能删除管理员."
+
+#: main/views.py:176
+#, fuzzy
+#| msgid "permission denied."
+msgid "Permission denied."
+msgstr "没有操作权限."
+
+#: main/views.py:178 main/views.py:234 main/views.py:295
+msgid "You are not a business user."
+msgstr "您不是企业用户,请先绑定公司."
+
+#: main/views.py:237 main/views.py:298
+msgid "End time must be later than start time."
+msgstr "结束时间必须晚于开始时间."
+
+#: main/views.py:240 main/views.py:301
+msgid "Duration is too short."
+msgstr "时间间隔太短."
+
+#: main/views.py:311
+msgid "It is out of stock."
+msgstr "没有库存了,请重新刷新."
+
+#: main/views.py:316 main/views.py:362
+msgid "The company no balance"
+msgstr "公司账户没有余额了."
+
+#: main/views.py:357
+msgid "Staff is busy."
+msgstr "这个员工已经被预定,请重新刷新."
+
+#: main/views.py:402
+msgid "Failure, need to cancel 2 days in advance"
+msgstr "失败,必须提前2天才可以取消"
+
+#, fuzzy
+#~| msgid "can't find the company"
+#~ msgid "you dont have company"
+#~ msgstr "你不是企业用户."
