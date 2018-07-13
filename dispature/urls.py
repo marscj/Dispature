@@ -31,3 +31,6 @@ if settings.DEBUG:
 # static files
 urlpatterns = urlpatterns + \
     static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns = urlpatterns + \
+    static(settings.ANDROID_URL, document_root=settings.ANDROID_ROOT)
