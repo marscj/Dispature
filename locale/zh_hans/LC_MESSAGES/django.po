@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-11 15:03+0400\n"
+"POT-Creation-Date: 2018-07-13 11:41+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,67 +24,75 @@ msgstr ""
 msgid "Unable to log in with provided credentials."
 msgstr "无法使用提供的凭据登陆."
 
-#: main/views.py:113
+#: main/views.py:115
 msgid "Unable to reset password with provided credentials."
 msgstr "无法使用提供的凭据重置密码."
 
-#: main/views.py:140
+#: main/views.py:142
 #, fuzzy
 #| msgid "verification code erro"
 msgid "Verification code erro."
 msgstr "验证码错误."
 
-#: main/views.py:142
+#: main/views.py:144
 #, fuzzy
 #| msgid "can't find the company"
 msgid "Can't find the company."
 msgstr "找不到该公司."
 
-#: main/views.py:147
+#: main/views.py:149
 #, fuzzy
 #| msgid "parameter error"
 msgid "Parameter error."
 msgstr "参数错误"
 
-#: main/views.py:174
+#: main/views.py:176
 #, fuzzy
 #| msgid "can not delete admin"
 msgid "Can't delete admin."
 msgstr "不能删除管理员."
 
-#: main/views.py:176
+#: main/views.py:178
 #, fuzzy
 #| msgid "permission denied."
 msgid "Permission denied."
 msgstr "没有操作权限."
 
-#: main/views.py:178 main/views.py:234 main/views.py:295
+#: main/views.py:180 main/views.py:236 main/views.py:297
 msgid "You are not a business user."
 msgstr "您不是企业用户,请先绑定公司."
 
-#: main/views.py:237 main/views.py:298
+#: main/views.py:239 main/views.py:300
 msgid "End time must be later than start time."
 msgstr "结束时间必须晚于开始时间."
 
-#: main/views.py:240 main/views.py:301
+#: main/views.py:242 main/views.py:303
 msgid "Duration is too short."
 msgstr "时间间隔太短."
 
-#: main/views.py:311
+#: main/views.py:313
 msgid "It is out of stock."
 msgstr "没有库存了,请重新刷新."
 
-#: main/views.py:316 main/views.py:362
+#: main/views.py:318 main/views.py:364
 msgid "The company no balance"
 msgstr "公司账户没有余额了."
 
-#: main/views.py:357
+#: main/views.py:359
 msgid "Staff is busy."
 msgstr "这个员工已经被预定,请重新刷新."
 
-#: main/views.py:402
+#: main/views.py:404
 msgid "Failure, need to cancel 2 days in advance"
 msgstr "失败,必须提前2天才可以取消"
+
+#: main/views.py:449
+msgid "Order has been cancelled"
+msgstr "订单已经取消"
+
+#: main/views.py:451
+msgid "Can't complete the order in advance"
+msgstr "不能提前完成任务"
 
 #, fuzzy
 #~| msgid "can't find the company"

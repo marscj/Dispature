@@ -55,6 +55,7 @@ class SignInView(ObtainAuthToken):
                     'name': client.data['name'],
                     'phone': client.data['phone'],
                     'company': client.data['company'],
+                    'type': 0
                 })
         except Exception:
             pass
@@ -68,6 +69,7 @@ class SignInView(ObtainAuthToken):
                     'name': staff.data['name'],
                     'phone': staff.data['phone'],
                     'store': staff.data['store'],
+                    'type': 1
                 })
         except Exception:
             pass
@@ -404,6 +406,56 @@ class OrderCancelView(views.APIView, OrderHelper):
         serializer = MainSerializers.OrderSerializer(order)
         return Response(serializer.data)
 
+class OrderDisagreeView(views.APIView, OrderHelper):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    def post(self, request, pk=None):
+       
+        try:
+            order = MainModel.Order.objects.get(pk=pk)
+        except order.DoesNotExist:
+            return Response(status=404)
+        
+        action = request.data.get('action')
+
+        order.staff_status = action
+        
+        if action == 2:
+            order.order_status = 1
+            order.pay_status = 2
+
+        order.save()
+        
+        serializer = MainSerializers.OrderSerializer(order)
+        return Response(serializer.data)
+
+
+class OrderCompletelView(views.APIView, OrderHelper):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    def get(self, request, pk=None):
+       
+        try:
+            order = MainModel.Order.objects.get(pk=pk)
+        except order.DoesNotExist:
+            return Response(status=404)
+        
+        if datetime.now()> order.end_time:
+            if order.order_status == 0:
+                order.order_status = 2
+                order.save()
+            else:
+                return Response(_('Order has been cancelled'), status=400)
+        else:
+            return Response(_('Can\'t complete the order in advance'), status=400)
+        
+        serializer = MainSerializers.OrderSerializer(order)
+        return Response(serializer.data)
+
 class OrderRemarkView(views.APIView, OrderHelper):
     authentication_classes = (authentication.TokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
@@ -489,8 +541,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = MainSerializers.OrderSerializer
 
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ['company']
-    ordering = ('order_status', 'start_time')
+    filter_fields = ['company', 'staff']
+    ordering = ('order_status', 'start_time', 'end_time')
 
 
 class ModelViewSet(viewsets.ModelViewSet, ViewHelper):
