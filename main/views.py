@@ -495,8 +495,6 @@ class StaffAcceptView(views.APIView):
             return Response(status=404)
         
         token, created = Token.objects.get_or_create(user=user)
-
-        print(request)
         
         accept = request.data.get('accept')
 
