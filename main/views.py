@@ -234,6 +234,8 @@ class SettlementView(views.APIView, OrderHelper):
 
         if user.company is None:
             return Response(_('You are not a business user.'), status=400)
+        elif user.company.status == 0:
+            return Response(_('Company is disabled.'), status=400)
 
         if start_time > end_time:
             return Response(_('End time must be later than start time.'), status=400)
@@ -295,6 +297,8 @@ class OrderCreateView(views.APIView, OrderHelper):
 
         if user.company is None:
             return Response(_('You are not a business user.'), status=400)
+        elif user.company.status == 0:
+            return Response(_('Company is disabled.'), status=400)
 
         if start_time > end_time:
             return Response(_('End time must be later than start time.'), status=400)

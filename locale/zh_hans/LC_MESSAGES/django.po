@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-13 11:41+0400\n"
+"POT-Creation-Date: 2018-07-17 12:14+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -58,39 +58,43 @@ msgstr "不能删除管理员."
 msgid "Permission denied."
 msgstr "没有操作权限."
 
-#: main/views.py:180 main/views.py:236 main/views.py:297
+#: main/views.py:180 main/views.py:236 main/views.py:299
 msgid "You are not a business user."
 msgstr "您不是企业用户,请先绑定公司."
 
-#: main/views.py:239 main/views.py:300
+#: main/views.py:238 main/views.py:301
+msgid "Company is disabled."
+msgstr "公司被禁用."
+
+#: main/views.py:241 main/views.py:304
 msgid "End time must be later than start time."
 msgstr "结束时间必须晚于开始时间."
 
-#: main/views.py:242 main/views.py:303
+#: main/views.py:244 main/views.py:307
 msgid "Duration is too short."
 msgstr "时间间隔太短."
 
-#: main/views.py:313
+#: main/views.py:317
 msgid "It is out of stock."
 msgstr "没有库存了,请重新刷新."
 
-#: main/views.py:318 main/views.py:364
+#: main/views.py:322 main/views.py:368
 msgid "The company no balance"
 msgstr "公司账户没有余额了."
 
-#: main/views.py:359
+#: main/views.py:363
 msgid "Staff is busy."
 msgstr "这个员工已经被预定,请重新刷新."
 
-#: main/views.py:404
+#: main/views.py:408
 msgid "Failure, need to cancel 2 days in advance"
 msgstr "失败,必须提前2天才可以取消"
 
-#: main/views.py:449
+#: main/views.py:456
 msgid "Order has been cancelled"
 msgstr "订单已经取消"
 
-#: main/views.py:451
+#: main/views.py:458
 msgid "Can't complete the order in advance"
 msgstr "不能提前完成任务"
 

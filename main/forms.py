@@ -189,6 +189,8 @@ class OrderBaseForm(forms.ModelForm, OrderHelper):
             if duration.days * 24 * 3600 + duration.seconds < 3600:
                 raise ValidationError('The duration is too short.')
 
+        
+
         return clean_data
 
 class OrderCreateForm(OrderBaseForm, OrderHelper):
@@ -213,6 +215,8 @@ class OrderCreateForm(OrderBaseForm, OrderHelper):
         if client is not None:
             if client.company is None:
                 raise ValidationError('Client is not a company user.')
+            elif client.company.status == 0:
+                raise ValidationError('Company is disabled.')
 
         if start_time is not None and end_time is not None:
             days = Tools.convert_timedelta(end_time - start_time)

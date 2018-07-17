@@ -379,7 +379,7 @@ class VehicleModelAdmin(PermissionAdmin):
 
 
 @admin.register(MainModel.Store, site=site)
-class StoreAdmin(DjangoObjectActions, PermissionAdmin):
+class StoreAdmin(PermissionAdmin):
 
     form = MainForm.StoreForm
 
@@ -387,6 +387,8 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
         'name',
         'tel',
         'phone',
+        'wechart',
+        'whatsup',
         'email',
         'addr',
         'open_time',
@@ -398,41 +400,27 @@ class StoreAdmin(DjangoObjectActions, PermissionAdmin):
         'service_charge',
         'latitude',
         'longitude',
-        'verify'
     ]
 
     list_display = [
         'name',
         'tel',
         'phone',
+        'wechart',
+        'whatsup',
         'email',
         'addr',
-        'verify'
     ]
 
     list_display_links = [
         'name',
         'tel',
         'phone',
+        'wechart',
+        'whatsup',
         'email',
         'addr',
-        'verify'
     ]
-
-    readonly_fields = [
-        'verify'
-    ]
-
-    def change_code(self, request, obj):
-        from django.utils.crypto import get_random_string
-        if request.user.is_superuser:
-            obj.verify = get_random_string(
-                length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-            obj.save()
-
-    change_code.label = "Change Verifycode"
-    change_code.short_description = "Change verifycode"
-    change_actions = ('change_code', )
 
 class AccountDetailInline(admin.StackedInline):
     model = MainModel.AccountDetail
@@ -532,9 +520,6 @@ class OrderAdmin(PermissionAdmin):
         'start_time',
         'end_time',
         'pay_status',
-        # 'service_type',
-        # 'staff',
-        # 'vehicle',
         'client',
         'store',
         'company'

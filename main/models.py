@@ -91,6 +91,8 @@ class Store(models.Model):
     phone = PhoneNumberField(unique=True)
     email = models.EmailField(unique=True)
     addr = models.CharField(max_length=256)
+    wechart = models.CharField(max_length=64, default='')
+    whatsup = models.CharField(max_length=64, default='')
     open_time = models.TimeField(default='09:00')
     close_time = models.TimeField(default='18:00')
     driver_daily_charge = models.FloatField(default=120.0)  # 日薪
@@ -100,7 +102,6 @@ class Store(models.Model):
     service_charge = models.FloatField(default=20.0) #手续费
     latitude = models.FloatField(default=25.270096)
     longitude = models.FloatField(default=55.312518)
-    verify = models.CharField(max_length=4, unique=True, default=Tools.get_code, help_text='For The Staff Regist', verbose_name = 'verify code')
 
     objects = StoreManager
 
@@ -129,7 +130,7 @@ class Staff(User):
         verbose_name_plural = 'Staff'
 
     def __str__(self):
-        return self.username
+        return self.username + '(' + str(self.phone) + ')'
 
 class VehicleModelManager(models.Manager):
     pass
@@ -250,7 +251,7 @@ class Client(User):
         verbose_name_plural = 'Client'
 
     def __str__(self):
-        return self.name
+        return self.name + '(' + str(self.phone) + ')'
 
 class AccountRechargeManager(models.Manager):
     pass
