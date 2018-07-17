@@ -29,5 +29,5 @@ urlpatterns = [
     url(r'^order-remark/(?P<pk>[0-9]+)/$', View.OrderRemarkView.as_view()),
     url(r'^order-disagree/(?P<pk>[0-9]+)/$', View.OrderDisagreeView.as_view()),
     url(r'^order-comlete/(?P<pk>[0-9]+)/$', View.OrderCompletelView.as_view()),
-    url(r'^staff-accept/', View.StaffAcceptView.as_view()),
+    url(r'^staff-accept/', View.StaffAcceptView.as_view()), 
 ] + router.urls
