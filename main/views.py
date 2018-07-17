@@ -69,7 +69,8 @@ class SignInView(ObtainAuthToken):
                     'name': staff.data['name'],
                     'phone': staff.data['phone'],
                     'store': staff.data['store'],
-                    'type': 1
+                    'type': 1,
+                    'accept': staff.data['accept']
                 })
         except Exception:
             pass
@@ -479,6 +480,40 @@ class OrderRemarkView(views.APIView, OrderHelper):
         
         serializer = MainSerializers.OrderSerializer(order)
         return Response(serializer.data)
+
+class StaffAcceptView(views.APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    renderer_classes = (Utf8JSONRenderer,)
+
+    def get(self, request, pk=None):
+
+        try:
+            user = request.user
+            staff = request.user.staff
+        except Exception:
+            return Response(status=404)
+        
+        token, created = Token.objects.get_or_create(user=user)
+        
+        try:
+            staff.accept = request.data.get('accept')
+            staff.save()
+            
+            return Response({
+                    'token': token.key,
+                    'username': user.username,
+                    'userId': staff.userId,
+                    'name': staff.name,
+                    'phone': staff.phone,
+                    'store': staff.store,
+                    'type': 1,
+                    'accept': staff.accept
+                })
+        except Exception:
+            return Response(status=400)
+        
+        return Response({'token': token.key})
 
 class AccountDetailViewSet(viewsets.ModelViewSet):
     authentication_classes = (authentication.TokenAuthentication,)
