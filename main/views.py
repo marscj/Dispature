@@ -486,7 +486,7 @@ class StaffAcceptView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
     renderer_classes = (Utf8JSONRenderer,)
 
-    def get(self, request, pk=None):
+    def post(self, request, pk=None):
 
         try:
             user = request.user
