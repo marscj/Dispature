@@ -486,7 +486,7 @@ class StaffAcceptView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
     renderer_classes = (Utf8JSONRenderer,)
 
-    def post(self, request, pk=None):
+    def post(self, request):
 
         try:
             user = request.user
@@ -495,20 +495,26 @@ class StaffAcceptView(views.APIView):
             return Response(status=404)
         
         token, created = Token.objects.get_or_create(user=user)
+
+        print(request)
+        
+        accept = request.data.get('accept')
+
+        staff.accept = accept
+        staff.save()
         
         try:
-            staff.accept = request.data.get('accept')
-            staff.save()
-            
+            serializer = MainSerializers.StaffSerializer(staff)
+
             return Response({
                     'token': token.key,
                     'username': user.username,
-                    'userId': staff.userId,
-                    'name': staff.name,
-                    'phone': staff.phone,
-                    'store': staff.store,
+                    'userId': serializer.data['userId'],
+                    'name': serializer.data['name'],
+                    'phone': serializer.data['phone'],
+                    'store': serializer.data['store'],
                     'type': 1,
-                    'accept': staff.accept
+                    'accept': serializer.data['accept']
                 })
         except Exception:
             return Response(status=400)
