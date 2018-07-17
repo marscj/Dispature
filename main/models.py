@@ -91,7 +91,7 @@ class Store(models.Model):
     phone = PhoneNumberField(unique=True)
     email = models.EmailField(unique=True)
     addr = models.CharField(max_length=256)
-    wechart = models.CharField(max_length=64, default='')
+    wechart = models.CharField(max_length=64, default='', verbose_name='wechat')
     whatsup = models.CharField(max_length=64, default='')
     open_time = models.TimeField(default='09:00')
     close_time = models.TimeField(default='18:00')
