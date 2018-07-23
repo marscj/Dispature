@@ -200,7 +200,6 @@ LOGIN_REDIRECT_URL = 'home'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # jet settings
-from django.utils.translation import gettext, gettext_lazy as _
 JET_SIDE_MENU_COMPACT = True
 JET_CHANGE_FORM_SIBLING_LINKS = True
 # JET_INDEX_DASHBOARD = 'jet.dashboard.dashboard.DefaultIndexDashboard'
