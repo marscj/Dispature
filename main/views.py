@@ -70,7 +70,8 @@ class SignInView(ObtainAuthToken):
                     'phone': staff.data['phone'],
                     'store': staff.data['store'],
                     'type': 1,
-                    'accept': staff.data['accept']
+                    'accept': staff.data['accept'],
+                    'photo': staff.data['photo']
                 })
         except Exception:
             pass
@@ -512,7 +513,8 @@ class StaffAcceptView(views.APIView):
                     'phone': serializer.data['phone'],
                     'store': serializer.data['store'],
                     'type': 1,
-                    'accept': serializer.data['accept']
+                    'accept': serializer.data['accept'],
+                    'photo': serializer.data['photo']
                 })
         except Exception:
             return Response(status=400)
@@ -617,15 +619,37 @@ class UpLoadFile(views.APIView):
 
     def post(self, request):
         try:
+            user = request.user
             staff = request.user.staff
         except Exception:
-            return Response(status=401)
+            return Response(status=404)
+        
+        token, created = Token.objects.get_or_create(user=user)
 
-        photo=request.FILES.get('photo','')
+        print(request.FILES)
+        photo = request.FILES.get('photo','')
 
         if photo:  
             file_content = ContentFile(photo.read()) 
             staff.photo.save(photo.name, file_content)
             staff.save()
 
-            return Response(MainSerializers.StaffSerializer(staff).data)
+            try:
+                serializer = MainSerializers.StaffSerializer(staff)
+
+                return Response({
+                        'token': token.key,
+                        'username': user.username,
+                        'userId': serializer.data['userId'],
+                        'name': serializer.data['name'],
+                        'phone': serializer.data['phone'],
+                        'store': serializer.data['store'],
+                        'type': 1,
+                        'accept': serializer.data['accept'],
+                        'photo': serializer.data['photo']
+                    })
+            except Exception:
+                return Response(status=400)
+        
+        else:
+            return Response('error', status=400)
