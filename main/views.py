@@ -1,5 +1,5 @@
 from django.utils.crypto import get_random_string
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext_lazy as _
 from django.core.files.base import ContentFile
 from django.contrib.auth import authenticate, password_validation
 from django.core.exceptions import ValidationError
