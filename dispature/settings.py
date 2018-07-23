@@ -155,7 +155,7 @@ TIME_ZONE = 'Asia/Dubai'
 
 USE_I18N = True
 
-USE_L10N = False
+USE_L10N = True
 
 USE_TZ = False 
 
