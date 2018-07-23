@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -158,7 +158,12 @@ USE_I18N = True
 USE_L10N = False
 
 USE_TZ = False 
- 
+
+LANGUAGES = (
+    ('en', ('English')),
+    ('zh-hans', ('中文简体')),
+)
+
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 ) 
