@@ -5,3 +5,6 @@ def home(request):
     context          = {}
     context['hello'] = '网站正在制作中!'
     return render(request, 'home.html', context)
+
+def privacy(request):
+    return render(request, 'privacy.html')
